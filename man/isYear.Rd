@@ -1,0 +1,18 @@
+\name{isYear}
+\alias{isYear}
+\title{isYear}
+\description{Function to find out whether a vector consists of strings in the format "yXXXX" or "XXXX" with X being a number}
+\usage{isYear(x, with_y=TRUE)}
+\arguments{
+  \item{x}{A vector}
+  \item{with_y}{indicates which dataformat years have to have (4-digit without y (e.g.1984) or 5digit including y (y1984))}
+}
+\value{ Returns a vector of the length of x with TRUE and FALSE }
+\author{Benjamin Bodirsky}
+\examples{
+x<-c("1955","y1853","12a4")
+isYear(x, with_y=TRUE)
+isYear(x, with_y=FALSE)
+}
+
+

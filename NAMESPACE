@@ -1,0 +1,101 @@
+importFrom("utils", "head", "tail")
+importFrom("methods", "Ops", "as", "callGeneric", "is", "new")
+importFrom("stats", "as.formula")
+importFrom("utils", "read.csv", "read.csv2", "read.table",
+           "setTxtProgressBar", "txtProgressBar", "type.convert",
+           "write.csv", "write.table")
+importFrom("reshape2","melt")
+
+exportClasses(magpie,quitte)
+
+exportMethods(as.array,
+              as.data.frame,
+              as.magpie,
+              as.quitte,
+              rowSums,
+              rowMeans,
+              colSums,
+              colMeans,
+              round,
+              setNames,
+              "[",
+              "[<-",
+              Ops)
+
+S3method(as.quitte, quitte)
+S3method(as.quitte, data.frame)
+S3method(head, magpie)
+S3method(tail, magpie)
+S3method(print, magpie)
+
+
+export(
+add_columns,
+add_dimension,
+calibrate_it,
+clean_magpie,
+collapseNames,
+complete_magpie,
+convergence,
+convert.report,
+copy.attributes,
+"copy.attributes<-",
+copy.magpie,
+dimCode,
+dimSums,
+fulldim,
+getCells,
+"getCells<-",
+getCPR,
+getNames,
+"getNames<-",
+getRegionList,
+"getRegionList<-",
+getRegions,
+"getRegions<-",
+getSets,
+"getSets<-",
+getYears,
+"getYears<-",
+getComment,
+"getComment<-",
+head.magpie,
+is.magpie,
+is.spatial,
+is.temporal,
+is.quitte,
+isYear,
+lin.convergence,
+lowpass,
+magpie_expand,
+magpieComp,
+magpieResolution,
+magpiesort,
+make.ISOyear,       
+mbind,
+mbind2,
+mcalc,
+mselect,
+"mselect<-",
+ncells,
+ndata,
+new.magpie,
+nregions,
+nyears,
+old_dim_convention,
+place_x_in_y,
+print.magpie,
+read.magpie,
+read.report,
+remind2magpie,
+setCells,
+setComment,
+setNames,
+setYears,
+tail.magpie,
+time_interpolate,
+unwrap,
+wrap,
+write.magpie,
+write.report,
+write.reportProject)
