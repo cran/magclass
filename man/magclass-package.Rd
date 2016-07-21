@@ -8,14 +8,25 @@
 \tabular{ll}{
 Package: \tab magclass\cr
 Type: \tab Package\cr
-Version: \tab 3.74\cr
-Date: \tab 2015-11-17\cr
+Version: \tab 3.85\cr
+Date: \tab 2016-07-21\cr
 License: \tab LGPL-3\cr
 LazyLoad: \tab yes\cr
 }
 }
 \author{
-Jan Philipp Dietrich, Benjamin Bodirsky, Markus Bonsch, Henrik Bengtsson, Misko Stevanovic, Florian Humpenoeder
+Jan Philipp Dietrich, 
+Benjamin Bodirsky, 
+Misko Stevanovic,
+Lavinia Baumstark,
+Christoph Bertram, 
+Markus Bonsch, 
+Anastasis Giannousakis,
+Florian Humpenoeder, 
+David Klein,  
+Ina Neher, 
+Michaja Pehl,
+Anselm Schultes
 
 Maintainer: Jan Philipp Dietrich <dietrich@pik-potsdam.de>
 }

@@ -40,7 +40,7 @@ return(as.magpie(mag,spatial=1,temporal=2))
     s <- read.table(file,sep=sep,header=FALSE,nrows=1) 
     header <- (.trim(s[,1]) == "Model" | .trim(s[,1]) == "MODEL")
     #read in raw data
-    raw <- read.table(file,sep=sep,header=header,stringsAsFactors=FALSE,na.strings = "N/A",fileEncoding = "UTF8")
+    raw <- read.table(file,sep=sep,header=header,stringsAsFactors=FALSE,na.strings = "N/A")#,fileEncoding = "UTF8")
     ugly_format <-  all(is.na(raw[,dim(raw)[2]]))
     if(ugly_format) raw <- raw[,-dim(raw)[2]]
     

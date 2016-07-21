@@ -1,4 +1,5 @@
 calibrate_it<-function(origin, cal_to, cal_type="convergence", cal_year=NULL, end_year=NULL, report_calibration_factors=FALSE) {
+#data(population_magpie) 
 #origin = population_magpie[,,"A2"]
 #cal_to= population_magpie[,,"B1"]
 #cal_year="y1995"

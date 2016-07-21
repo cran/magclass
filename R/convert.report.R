@@ -1,4 +1,5 @@
 convert.report <- function(rep,inmodel=NULL,outmodel="MAgPIE",full=FALSE,as.list=TRUE) {
+  # Commets would improve the code
   .convert <- function(input,inmodel=NULL,outmodel="MAgPIE",full=FALSE) {
     map  <- magclassdata$map
     if(!(outmodel %in% names(map)))            stop("No existing transformation rules for output model \"",outmodel,"\"!",call.=FALSE)

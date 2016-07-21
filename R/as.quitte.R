@@ -1,7 +1,7 @@
-setOldClass(c("quitte","data.frame"))
+setOldClass(c("quitte","data.frame","tbl_df", "tbl"))
 
 
-as.quitte <- function(x) {
+as.quitte <- function(x,...) {
   UseMethod("as.quitte",x)
 }
 
@@ -16,7 +16,8 @@ as.quitte.quitte <- function(x) {
 
 setMethod("as.quitte", "quitte", as.quitte.quitte)
 
-as.quitte.data.frame <- function (x) {
+as.quitte.data.frame <- function (x,periodClass = "integer") {
+  if (!(periodClass %in% c("integer", "POSIXct"))) stop("periodClass must be in c('integer', 'POSIXct')") 
   store_attributes <- copy.attributes(x,0)
   mandatory_columns <- c("model","scenario","region","variable","unit","period","value")
   factor_columns <- c("model","scenario","region","variable","unit")
@@ -34,15 +35,19 @@ as.quitte.data.frame <- function (x) {
     if(!("region"   %in% colnames(x))) x <- cbind(x,region=as.factor("GLO"))
     if(!("variable" %in% colnames(x))) x <- cbind(x,variable=as.factor(NA))
     if(!("unit"     %in% colnames(x))) x <- cbind(x,unit=as.factor(NA))
-    if(!("period"   %in% colnames(x))) x <- cbind(x,period=as.POSIXct(NA))
+    if (periodClass == "POSIXct") if(!("period"   %in% colnames(x))) x <- cbind(x,period=as.POSIXct(NA))
+    if (periodClass == "integer") if(!("period" %in% colnames(x))) x <- cbind(x, period = as.integer(NA))
     if(!("value"    %in% colnames(x))) stop("Data frame cannot be converted. A column \"value\" has to be provided!")      
   }
   factor_check <- sapply(x[,factor_columns],is.factor)
   if(!all(factor_check)) {
     for(i in names(factor_check)[!factor_check]) x[[i]] <- as.factor(x[[i]])
   }
-  ISOyear <- make.ISOyear()
-  if(!("POSIXct" %in% attr(x$period,"class"))) x$period <- ISOyear(x$period)
+  if (periodClass == "integer") x$period <- as.integer(x$period)
+  if (periodClass == "POSIXct"){
+    ISOyear <- make.ISOyear()
+    if(!("POSIXct" %in% attr(x$period,"class"))) x$period <- ISOyear(x$period)
+  }
   if(!is.numeric(x$value)) stop("Value column must contain numeric data!")
   
   #rearrange data for better readability
@@ -55,7 +60,8 @@ as.quitte.data.frame <- function (x) {
 
 setMethod("as.quitte", "data.frame", as.quitte.data.frame)
 
-as.quitte.magpie <- function (x) {
+as.quitte.magpie <- function (x,periodClass = "integer") {
+  if (!(periodClass %in% c("integer", "POSIXct"))) stop("periodClass must be in c('integer', 'POSIXct')") 
   x <- clean_magpie(x,what="sets")
   store_attributes <- copy.attributes(x,0)
   d <- dimnames(x)
@@ -78,11 +84,13 @@ as.quitte.magpie <- function (x) {
   }
   if(all(x$period==0)) {
     levels(x$period) <- NA  
-  } else {
+  } else if (periodClass == "integer"){
+    x$period <- as.integer(as.character(x$period))
+  }else if (periodClass == "POSIXct"){
     ISOyear <- make.ISOyear()
     x$period <- ISOyear(x$period)
   }
-  return(copy.attributes(store_attributes,as.quitte.data.frame(x)))
+  return(copy.attributes(store_attributes,as.quitte.data.frame(x,periodClass)))
 }
 
 setMethod("as.quitte", "magpie", as.quitte.magpie)

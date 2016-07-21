@@ -1,4 +1,4 @@
-07ffdb1ec20388cecedca6f5f73c0546 *DESCRIPTION
+c8058c2539cfa6edc5e8e658bd44f01b *DESCRIPTION
 e6a600fd5e1d9cbde2d983680233ad02 *LICENSE
 c8ac4afeed57c7df51901593e355cab4 *NAMESPACE
 cc91a71e4bca01d11b40521afef633de *R/add_columns.R
@@ -6,15 +6,15 @@ ed0f51ed099c8dc4558ab6fb07ba0dc3 *R/add_dimension.R
 2f8b5a34031ec41048e83b87955cdf09 *R/as.array.R
 8cb91827bcf0c1408881a04b3b29fbda *R/as.data.frame.R
 034f80a6068d536a9f230d4cad55e2ef *R/as.magpie.R
-9280385b85ddb44dfb8666acfb1d15e0 *R/as.quitte.R
-aaa9e44b40b5e2bfe01f3f83ff34b3ad *R/calibrate_it.R
+5bf8113bb2fe11b5e93c1ee71ff1894f *R/as.quitte.R
+ca301a38f990eaad0c4e3f001339e0bd *R/calibrate_it.R
 7d5648a89b43e21dd76b1abfb85193ef *R/clean_magpie.R
 c3a8279bc81107f0c9f256169fdf8414 *R/colMeans-method.R
 b2cb02286a6955b578084f0d83f1dd84 *R/colSums-method.R
 801ba0afe34ba1056d051be8120207cd *R/collapseNames.R
 d80ddf3460b1a78f19dc6a07245de9bd *R/complete_magpie.R
 93fec26b27ca0906089eaa13db7f8d89 *R/convergence.R
-1cc948f2f16b8f33b0c691aa8a624874 *R/convert.report.R
+0a019eaa520726ea3677e164c72ffdd3 *R/convert.report.R
 d3c9d070eb05ecbd25ef831ecbd62eae *R/copy.attributes.R
 f1f7783aa957b01afb8a74f94eee8ea9 *R/copy.magpie.R
 93973a4575359d586d0194572c47d8c3 *R/dimCode.R
@@ -33,7 +33,7 @@ f89c510273e06c807a3ae44be9264d31 *R/getSets.R
 a273df3580dd029baa6f5b2acc31beb9 *R/getYears.R
 eef91f99907e6b80caeae5081556623b *R/head.magpie.R
 351ec42344a1350e429fe86f66308887 *R/is.magpie.R
-83071230eaa02c4266f5eed882b6bfd1 *R/is.quitte.R
+5fbfd786fb7f65474f1ea62cbc9da582 *R/is.quitte.R
 7362a2e96fc19b49bb50053b7c195fd7 *R/is.spatial.R
 b17be847261042afc73a280723c00e29 *R/is.temporal.R
 969c988ff86d231855524a5c1a3a4407 *R/isYear.R
@@ -45,7 +45,7 @@ b17be847261042afc73a280723c00e29 *R/is.temporal.R
 860ab5167a184968b5651076f9a868bd *R/magpie_expand.R
 7a97fa0cbe4a1d8522c2cc4410f00be6 *R/magpiesort.R
 5f2e3f18fd31241831b505c863267d3a *R/make.ISOyear.R
-fc1b8e5bc3a25ba07493977be2f30a1b *R/mbind.R
+2be180ea6ae09bd9856ce0712a2aa0cd *R/mbind.R
 9d6c2cfe1bc892d12aadf02183a8876c *R/mbind2.R
 225035a971d6d5245422c3e02e430109 *R/mcalc.R
 ff96beedadf0d246112ae3f80c3d7c61 *R/mselect.R
@@ -60,8 +60,8 @@ be9b1c05e66307112e9d0b53db1d2b06 *R/old_dim_convention.R
 c5a7758fed90a6c584caf66b794a2d60 *R/place_x_in_y.R
 4f362d1e3b4c1dc3f79a8b5febe09933 *R/pmin-method.R
 43f8bd7b187d92623d94a5057e939004 *R/print.magpie.R
-0de6a5079a781c0b4bf49d23dc2c6f21 *R/read.magpie.R
-056c41ad681c172e4456bff12c53ca78 *R/read.report.R
+7c74cfe251717df11dc396497a4a99bf *R/read.magpie.R
+a042f1151728bb66d586ddcf4d6fc017 *R/read.report.R
 7b4c7103c16c0471e5edd6e571df0c0e *R/remind2magpie.R
 4f362d1e3b4c1dc3f79a8b5febe09933 *R/round-method.R
 e55b16b553338681553f085368012a83 *R/rowMeans-method.R
@@ -76,7 +76,7 @@ e690bf019abec47a223f691bf357803f *R/tidy2magpie.R
 25b87ef3a3a6d27840ed7eee4ec528cf *R/time_interpolate.R
 8a1a37d90c69b69908618a39bbdfe96b *R/unwrap.R
 9bf48b9285ff7cc73c2bf7b21734c3ca *R/wrap.R
-7c449e3ffa283a334442290f236c4e59 *R/write.magpie.R
+cf8b20101530b107998c4090668c5ffc *R/write.magpie.R
 643b0c177aa379564a297aeadf79111f *R/write.report.R
 464710a6357ab2b19c1412d4062187ee *R/write.reportProject.R
 dbb435bc70be6db249d510f5ddad70e3 *data/population_magpie.rda
@@ -111,7 +111,7 @@ ef648ed442f749e63302afaf53345465 *man/is.temporal.Rd
 b546126dd3d08b6f585a33fdbd7a87eb *man/isYear.Rd
 52a654d171bdf6661dd14c2a201044f5 *man/lin.convergence.rd
 2328df9e3f9dfda45bfbbd8d1be7fedd *man/lowpass.Rd
-57e7d4f8cc6a46bc20e8ea06196fe0fa *man/magclass-package.Rd
+65f9d8ae6afa4aef95a61a7d6d5906bf *man/magclass-package.Rd
 a3c9423d75f38562beaf6ade2b841a7f *man/magclassdata.rd
 a1dca0b20ca13ec8f1128748fcd6b0df *man/magpie-class.Rd
 667461da7337be96c7145fdb7cfe27c8 *man/magpieComp.Rd
@@ -128,7 +128,7 @@ ae291c1de39f83462eae6f6cd707a6d4 *man/old_dim_convention.Rd
 1785de8f1167fab7c1b2d2b3e3f6deb2 *man/place_x_in_y.Rd
 8c5bb5ed62aba86f04f507899e8db76f *man/population_magpie.rd
 4364cdd7834db1ff3cf271b9f0642872 *man/print-methods.Rd
-87b6eb1e552a7d48d9c027dfc72f1c4a *man/quitte-class.Rd
+e797b333de9015ac7f918619b42c02b6 *man/quitte-class.Rd
 9ec87fc0070fc70deadb789b717823e3 *man/read.magpie.Rd
 00a48170978bbd49814ff07b812629b1 *man/read.report.Rd
 59949c7cbfb815cabf4f74a3a0c3388a *man/remind2magpie.Rd

@@ -41,6 +41,9 @@ mbind <- function(...) {
     if(length(cells) != length(unique(cells))) stop("Some regions/cells occur more than once! Cannot handle this case!")
     output <- new("magpie",abind::abind(inputs,along=1))
   } else {
+    tmp <- function(x) return(length(getNames(x,fulldim = TRUE)))
+    tmp <- sapply(inputs,tmp)
+    if(length(unique(tmp))>1) warning("mbind most likely returned an erronous magpie object due to differnt numbers of data subdimensions in inputs!")
     output <- new("magpie",abind::abind(inputs,along=3))
   }
   if(length(grep("dummydimname",getNames(output),fixed=TRUE))==ndata(output)) dimnames(output)[[3]] <- NULL 

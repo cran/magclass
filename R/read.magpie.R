@@ -1,11 +1,11 @@
 read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,old_format=FALSE,comment.char="*",check.names=TRUE) {
   
   file_name <- paste(file_folder,file_name,sep="")  
-
-	if(length(Sys.glob(file_name))==0) {
-	  stop(paste("file",file_name,"does not exist"))
-	}
-
+  
+  if(length(Sys.glob(file_name))==0) {
+    stop(paste("file",file_name,"does not exist"))
+  }
+  
   #expand wildcards
   file_name_unexpanded <- file_name	
   file_name <- Sys.glob(file_name)
@@ -15,13 +15,13 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
   } else if(length(file)==0) {
     stop("File ",file_name_unexpanded," could not be found!")
   }
-
+  
   #if file-type is not mentioned file-ending is used as file-type
   if(is.null(file_type)) {
     file_type <- tail(strsplit(file_name,'\\.')[[1]],1)
   }
-  if(!(file_type %in% c('m','mz','csv','cs2','cs3','cs4','csvr','cs2r','cs3r','cs4r','put',"asc","nc"))) stop(paste("Unkown file type:",file_type))
-
+  if(!(file_type %in% c('m','mz','csv','cs2','cs3','cs4','csvr','cs2r','cs3r','cs4r','put',"asc","nc","nc2"))) stop(paste("Unkown file type:",file_type))
+  
   .readComment <- function(file_name,comment.char="*") {
     comment <- NULL
     if(!is.null(comment.char)) {
@@ -42,16 +42,16 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
     }
     return(substring(comment,2))
   }
-
-	if(file.exists(file_name)) {
+  
+  if(file.exists(file_name)) {
     if(file_type=="m" | file_type=="mz") {
-
+      
       if(file_type=="mz") {
         zz <- gzfile(file_name,"rb")
       } else {
         zz <- file(file_name,"rb")
       }
- 
+      
       if(!old_format) {
         fformat_version <- readBin(zz,integer(),1,size=2)
         nchar_comment <- readBin(zz,integer(),1,size=4)
@@ -78,7 +78,7 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
       datanames <- strsplit(readChar(zz,nchar_data),"\n")[[1]]
       
       if(old_format) readBin(zz,integer(),100,size=1) #100 Byte reserved for later file format improvements
-
+      
       output <- array(readBin(zz,numeric(),nelem,size=4),c(sum(cpr),nyears,nelem/sum(cpr)/nyears))
       output[is.nan(output)] <- NA
       if(any(cpr!=1)) {
@@ -100,7 +100,7 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
       close(zz)     
       attr(output,"FileFormatVersion") <- fformat_version
       read.magpie <- new("magpie",output)
-    
+      
     } else if(file_type=="cs3" | file_type=="cs3r") {
       x <- read.csv(file_name,comment.char=comment.char, check.names=check.names)
       datacols <- grep("^dummy\\.?[0-9]*$",colnames(x))
@@ -153,117 +153,126 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
       read.magpie[is.na(mp_rows)]<-NA
       names(read.magpie)<-paste(magclassdata$half_deg$region,1:59199,sep=".")
       read.magpie<-as.magpie(read.magpie)      
-    } else if(file_type=="nc") {
+    } else if(file_type=="nc") { #netcdf
       nc_file <- ncdf4::nc_open(file_name)
       options("magclass.verbosity" = 1)
+      
+      if (nc_file$dim$lat$len != 360) stop(paste0("Only netcdf files with 0.5 degree resolution (720x360) are supported. Your file has a dimension of ",nc_file$dim$lon$len, "x", nc_file$dim$lat$len,"."))
       if(is.null(nc_file$dim$time$len)) nc_file$dim$time$len <- 1
       if(is.null(nc_file$dim$time$vals)) nc_file$dim$time$vals <- 1995
+      
       #create a single array of all ncdf variables
       nc_data <- array(NA,dim=c(nc_file$dim$lon$len,nc_file$dim$lat$len,nc_file$dim$time$len,nc_file$nvars))
       for (i in 1:nc_file$nvars) {
         nc_data[,,,i] <- ncdf4::ncvar_get(nc_file,varid=names(nc_file$var)[i])
       }
+      
+      #taking out lat and lon from nc file
+      lat<-nc_file$dim$lat$vals
+      lon<-nc_file$dim$lon$vals
+      #coord from magclass data
+      coord <- magclassdata$half_deg[, c("lon", "lat")]
+      
       #reorder ncdf array into magpie cellular format (still as array)
-      coord <- magclassdata$half_deg[,c("lon","lat")]
-      if(nc_file$dim$lat$vals[1] > 0) coord[,"lat"] <- coord[,"lat"]*-1
-      coord[,"lon"]<-(coord[,"lon"]+180)/0.5+0.5
-      coord[,"lat"]<-(coord[,"lat"]+90)/0.5+0.5
-      read.magpie <- array(NA,dim=c(59199,nc_file$dim$time$len,nc_file$nvars),dimnames=list(paste(magclassdata$half_deg$region,1:59199,sep="."),paste("y",nc_file$dim$time$vals,sep=""),names(nc_file$var)))
-      for(i in 1:ncells(read.magpie)){
-        read.magpie[i,,] <- nc_data[coord[i,1],coord[i,2],,]
+      #create emtpy array in magpie cellular format
+      mag <- array(NA,dim=c(59199,nc_file$dim$time$len,nc_file$nvars),dimnames=list(paste(magclassdata$half_deg$region,1:59199,sep="."),paste("y",nc_file$dim$time$vals,sep=""),names(nc_file$var)))
+      #Loop over cells to give mag values taken from nc_data. For each cell in mag, we know the exact coordinates (coord). Hence, we can use coord to map coordinates in nc_data to cells in mag.
+      for (i in 1:ncells(mag)) {
+        mag[i,,] <- nc_data[which(coord[i, 1]==lon), which(coord[i,2]==lat),,]
       }
+      
       #convert array to magpie object
-      read.magpie <- as.magpie(read.magpie)
+      read.magpie <- as.magpie(mag)
     } else {
       #check for header
       if(file_type=="put") {
-  		  temp <- read.csv(file_name,nrow=1,header=FALSE,sep="\t",comment.char=comment.char)      
+        temp <- read.csv(file_name,nrow=1,header=FALSE,sep="\t",comment.char=comment.char)      
       } else {
-  		  temp <- read.csv(file_name,nrow=1,header=FALSE,comment.char=comment.char)
+        temp <- read.csv(file_name,nrow=1,header=FALSE,comment.char=comment.char)
       }      
-
+      
       #check for numeric elements in first row, which means a missing header
-  		header <- TRUE
+      header <- TRUE
       for(temp_elem in temp) {
         if(is.numeric(temp_elem)) header <- FALSE
       }  		
-
+      
       if(file_type=="put") {
-  		  temp <- read.csv(file_name,header=header,sep="\t",comment.char=comment.char)      
+        temp <- read.csv(file_name,header=header,sep="\t",comment.char=comment.char)      
       } else {
-  		  temp <- read.csv(file_name,header=header,comment.char=comment.char)
+        temp <- read.csv(file_name,header=header,comment.char=comment.char)
       }
-  		
-  		#analyse column content
-  		coltypes <- rep(0,dim(temp)[2])
-  		for(column in 1:dim(temp)[2]) {
-  		  if(sum(coltypes=="year")==0 & length(grep("^(y[0-9]{4}|[0-2][0-9]{3})$",temp[,column]))==dim(temp)[1]) {
-  		    coltypes[column] <- "year"
+      
+      #analyse column content
+      coltypes <- rep(0,dim(temp)[2])
+      for(column in 1:dim(temp)[2]) {
+        if(sum(coltypes=="year")==0 & length(grep("^(y[0-9]{4}|[0-2][0-9]{3})$",temp[,column]))==dim(temp)[1]) {
+          coltypes[column] <- "year"
         } else if(sum(coltypes=="region")==0 & sum(coltypes=="regiospatial")==0 & length(grep("^[A-Z]{3}$",temp[,column]))==dim(temp)[1]) {   
-  		    coltypes[column] <- "region"
+          coltypes[column] <- "region"
         } else if(sum(coltypes=="regiospatial")==0 & sum(coltypes=="region")==0 & length(grep("^[A-Z]{3}_[0-9]+$",temp[,column]))==dim(temp)[1]) {   
-  		    coltypes[column] <- "regiospatial"  
-		    } else if(!is.numeric(temp[1,column])) {
-		      coltypes[column] <- "other"
+          coltypes[column] <- "regiospatial"  
+        } else if(!is.numeric(temp[1,column])) {
+          coltypes[column] <- "other"
         } else if(sum(coltypes=="cell")==0 & length(temp[,column])%%max(temp[,column])==0 & suppressWarnings(try(all(unique(temp[,column])==1:max(temp[,column])),silent=TRUE)==TRUE)) {
           coltypes[column] <- "cell"
         } else {
           coltypes[column] <- "data"
         }
-  		}
-  		  		
-  		if(any(coltypes=="year")) {
-  		  temp <- temp[order(temp[,which(coltypes=="year")]),]
-  		  if(length(grep("y",temp[,which(coltypes=="year")]))==0) {
-  		    temp[,which(coltypes=="year")] <- as.factor(paste("y",temp[,which(coltypes=="year")],sep=""))
-  		  }
-  		}
-  		
-  		#backup check if cell column is really a cell column
-  		if(any(coltypes=="cell")){
-  		  if(dimnames(temp)[[2]][which(coltypes=="cell")]=="iteration") {
+      }
+      
+      if(any(coltypes=="year")) {
+        temp <- temp[order(temp[,which(coltypes=="year")]),]
+        if(length(grep("y",temp[,which(coltypes=="year")]))==0) {
+          temp[,which(coltypes=="year")] <- as.factor(paste("y",temp[,which(coltypes=="year")],sep=""))
+        }
+      }
+      
+      #backup check if cell column is really a cell column
+      if(any(coltypes=="cell")){
+        if(dimnames(temp)[[2]][which(coltypes=="cell")]=="iteration") {
           temp[,which(coltypes=="cell")] <- paste("iter",format(temp[,which(coltypes=="cell")]),sep="")
-  		    coltypes[which(coltypes=="cell")] <- "other"
-  		  } else if(header & !(dimnames(temp)[[2]][which(coltypes=="cell")]%in%c("dummy","dummy.1","dummy.2","dummy.3",""," ","cell","cells","Cell","Cells"))){
-  		    coltypes[which(coltypes=="cell")] <- "data"
-  		  } 
-  		}
-  		
-  		if(any(coltypes=="cell")) {
-  		  ncells <- dim(temp)[1]
-  		  if(any(coltypes=="year")) ncells <- ncells/length(unique(temp[,which(coltypes=="year")]))
+          coltypes[which(coltypes=="cell")] <- "other"
+        } else if(header & !(dimnames(temp)[[2]][which(coltypes=="cell")]%in%c("dummy","dummy.1","dummy.2","dummy.3",""," ","cell","cells","Cell","Cells"))){
+          coltypes[which(coltypes=="cell")] <- "data"
+        } 
+      }
+      
+      if(any(coltypes=="cell")) {
+        ncells <- dim(temp)[1]
+        if(any(coltypes=="year")) ncells <- ncells/length(unique(temp[,which(coltypes=="year")]))
         if(any(coltypes=="other")) ncells <- ncells/length(unique(temp[,which(coltypes=="other")]))         
-  		  if(!all(temp[1:ncells,which(coltypes=="cell")]==1:ncells)) coltypes[which(coltypes=="cell")] <- "data"
-  		}
-  		
-  		#set all coltypes after the first occurrence of "data" to "data"
-  		if(any(coltypes=="data")) coltypes[min(which(coltypes=="data")):length(coltypes)] <- "data"
-     
+        if(!all(temp[1:ncells,which(coltypes=="cell")]==1:ncells)) coltypes[which(coltypes=="cell")] <- "data"
+      }
+      
+      #set all coltypes after the first occurrence of "data" to "data"
+      if(any(coltypes=="data")) coltypes[min(which(coltypes=="data")):length(coltypes)] <- "data"
+      
       #set first columntype from "cell" to "data" if it seems that the data set is just a vector of numbers
       if(all(coltypes == c("cell",rep("data",length(coltypes)-1))) & dim(temp)[1]==1) coltypes[1] <- "data"
-  		
-  		#check coltypes for consistency
-  		if(length(which(coltypes=="data"))==0) {
-  		  print(coltypes)
-  		  stop(paste("Inconsistency in data columns! No data column found in",file_name))  		
-  		}
-  		
+      
+      #check coltypes for consistency
+      if(length(which(coltypes=="data"))==0) {
+        print(coltypes)
+        stop(paste("Inconsistency in data columns! No data column found in",file_name))  		
+      }
+      
       if(sum(coltypes=="data")!=(length(coltypes)-min(which(coltypes=="data"))+1)){
-  		  print(coltypes)
-  		  stop("Inconsistency in data columns!")
-  		}
-  		if(!all(which(coltypes=="data")==min(which(coltypes=="data")):length(coltypes))){
-  		  print(coltypes)
-  		  stop("Inconsistency in data columns!")
-  		} 		
-  		if(sum(coltypes=="data")==0){
-  		  print(coltypes)
-  		  stop("No data column found!")  		
-  		}
-  		if(sum(coltypes=="other")>1){
-  		  print(coltypes)
-  		  stop("Invalid format. More than one \"other\" column is not allowed!")
-  		}		
+        print(coltypes)
+        stop("Inconsistency in data columns!")
+      }
+      if(!all(which(coltypes=="data")==min(which(coltypes=="data")):length(coltypes))){
+        print(coltypes)
+        stop("Inconsistency in data columns!")
+      } 		
+      if(sum(coltypes=="data")==0){
+        print(coltypes)
+        stop("No data column found!")  		
+      }
+      if(sum(coltypes=="other")>1){
+        print(coltypes)
+        stop("Invalid format. More than one \"other\" column is not allowed!")
+      }		
       
       if(header) {
         if(length(grep("^y+[0-9]{4}$",dimnames(temp)[[2]][which(coltypes=="data")[1]]))==1) {
@@ -276,13 +285,13 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
       } else {
         headertype <- "none"
       }
-  		
-  		if(any(coltypes=="other")){
-  		  othernames <- levels(as.factor(temp[,which(coltypes=="other")]))
-  		  nother <- length(othernames)
-  		  if(header) {
-  		    if(headertype=="other") {
-  		      elemnames <- dimnames(temp)[[2]][which(coltypes=="data")]
+      
+      if(any(coltypes=="other")){
+        othernames <- levels(as.factor(temp[,which(coltypes=="other")]))
+        nother <- length(othernames)
+        if(header) {
+          if(headertype=="other") {
+            elemnames <- dimnames(temp)[[2]][which(coltypes=="data")]
             elemnames <- paste(rep(othernames,each=length(elemnames)),elemnames,sep=".")
           } else {
             elemnames <- othernames
@@ -291,44 +300,44 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
           if(sum(coltypes=="data")==1) {
             elemnames <- othernames
           } else {
-  		      elemnames <- 1:sum(coltypes=="data")
+            elemnames <- 1:sum(coltypes=="data")
             elemnames <- paste(rep(othernames,each=length(elemnames)),elemnames,sep=".")
           }
-  		  }
-  		  ncols <- length(elemnames)
-		  } else {
-		    nother <- 1
-		    if(header) {
-		      if(headertype=="other") {
+        }
+        ncols <- length(elemnames)
+      } else {
+        nother <- 1
+        if(header) {
+          if(headertype=="other") {
             elemnames <- dimnames(temp)[[2]][which(coltypes=="data")]
             ncols <- length(elemnames)
           } else {
             elemnames <- NULL
             ncols <- 1
           }
-		    } else {
-		      elemnames <- NULL
-		      ncols <- sum(coltypes=="data")
+        } else {
+          elemnames <- NULL
+          ncols <- sum(coltypes=="data")
         }
-		  }
+      }
       
       
       if(any(coltypes=="year")){
-  		  yearnames <- levels(temp[,which(coltypes=="year")])
-  		  nyears <- length(yearnames)
-		  } else if(headertype=="year") {
-		    yearnames <- dimnames(temp)[[2]][which(coltypes=="data")]
-		    nyears <- length(yearnames)
-		  } else {
-		    yearnames <- NULL
-		    nyears <- 1
+        yearnames <- levels(temp[,which(coltypes=="year")])
+        nyears <- length(yearnames)
+      } else if(headertype=="year") {
+        yearnames <- dimnames(temp)[[2]][which(coltypes=="data")]
+        nyears <- length(yearnames)
+      } else {
+        yearnames <- NULL
+        nyears <- 1
       }
       
       if(any(coltypes=="cell")){
-  		  ncells <- max(temp[,which(coltypes=="cell")])
-		  } else {
-		    if(headertype!="year"){
-		      ncells <- dim(temp)[1]/(nyears*nother)
+        ncells <- max(temp[,which(coltypes=="cell")])
+      } else {
+        if(headertype!="year"){
+          ncells <- dim(temp)[1]/(nyears*nother)
         } else {
           ncells <- dim(temp)[1]/nother  
         }
@@ -338,87 +347,87 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
         cellnames <- gsub("_",".",temp[1:ncells,which(coltypes=="regiospatial")],fixed=TRUE)
       } else {
         if(any(coltypes=="region")){
-    		  regionnames <- levels(temp[,which(coltypes=="region")])
-  		  } else if(headertype=="region") {
+          tmp_regionnames <- levels(temp[,which(coltypes=="region")])
+          regionnames <- tmp_regionnames[temp[,which(coltypes=="region")]]
+        } else if(headertype=="region") {
           regionnames <- dimnames(temp)[[2]][which(coltypes=="data")]       		  
           ncells <- ncells*length(regionnames)
-  		  } else {
-  		    regionnames <- "GLO"
+        } else {
+          regionnames <- "GLO"
         }
-    		if(length(unique(regionnames)) < length(regionnames)) {
+        if(length(unique(regionnames)) < length(regionnames)) {
           cellnames <- paste(regionnames,1:ncells,sep=".")
-    		} else {
+        } else {
           cellnames <- regionnames
-    		}
-  		}
-  		if(length(cellnames)==1) cellnames <- list(cellnames)
-
-  		
-  		if(any(coltypes=="other") & (headertype=="other" | headertype=="none")) {
-  		  output <- array(NA,c(ncells,nyears,ncols))
-  		  dimnames(output)[[1]] <- cellnames
-  		  dimnames(output)[[2]] <- yearnames
-  		  dimnames(output)[[3]] <- elemnames 
-  		  counter <- 0
+        }
+      }
+      if(length(cellnames)==1) cellnames <- list(cellnames)
+      
+      if(any(coltypes=="other") & (headertype=="other" | headertype=="none")) {
+        output <- array(NA,c(ncells,nyears,ncols))
+        dimnames(output)[[1]] <- cellnames
+        dimnames(output)[[2]] <- yearnames
+        dimnames(output)[[3]] <- elemnames 
+        counter <- 0
         for(other.elem in othernames){
           output[,,(1:sum(coltypes=="data"))+counter] <- array(as.vector(
-               as.matrix(temp[which(temp[,which(coltypes=="other")]==other.elem),
-               which(coltypes=="data")])),c(ncells,nyears,sum(coltypes=="data")))
+            as.matrix(temp[which(temp[,which(coltypes=="other")]==other.elem),
+                           which(coltypes=="data")])),c(ncells,nyears,sum(coltypes=="data")))
           counter <- counter + sum(coltypes=="data")
         } 
       } else if(!any(coltypes=="other") & headertype=="region") {
-  		  output <- array(NA,c(ncells,nyears,ncols))
-  		  dimnames(output)[[1]] <- cellnames
-  		  dimnames(output)[[2]] <- yearnames
-  		  dimnames(output)[[3]] <- elemnames 
-     	  for(i in 1:length(cellnames)) {
-      	  output[i,,1] <- temp[,which(coltypes=="data")[i]]
-      	} 
+        output <- array(NA,c(ncells,nyears,ncols))
+        dimnames(output)[[1]] <- cellnames
+        dimnames(output)[[2]] <- yearnames
+        dimnames(output)[[3]] <- elemnames 
+        for(i in 1:length(cellnames)) {
+          output[i,,1] <- temp[,which(coltypes=="data")[i]]
+        } 
       } else if(!any(coltypes=="other") & headertype=="year"){
         output <- array(NA,c(ncells,nyears,ncols))
-  		  dimnames(output)[[1]] <- cellnames
-  		  dimnames(output)[[2]] <- yearnames
-  		  dimnames(output)[[3]] <- elemnames
-      	for(year in yearnames) {
-      	  output[,year,1] <- temp[,year]
-      	}
+        dimnames(output)[[1]] <- cellnames
+        dimnames(output)[[2]] <- yearnames
+        dimnames(output)[[3]] <- elemnames
+        for(year in yearnames) {
+          output[,year,1] <- temp[,year]
+        }
       } else if(any(coltypes=="other") & headertype=="region") {
-  		  output <- array(NA,c(ncells,nyears,ncols))
-  		  dimnames(output)[[1]] <- cellnames
-  		  dimnames(output)[[2]] <- yearnames
-  		  dimnames(output)[[3]] <- elemnames 
-     	  for(i in 1:length(cellnames)) {
-     	    for(elem in elemnames) {
-      	    output[i,,elem] <- temp[which(temp[,which(coltypes=="other")]==elem),which(coltypes=="data")[i]]
-   	      }
-      	} 
+        output <- array(NA,c(ncells,nyears,ncols))
+        dimnames(output)[[1]] <- cellnames
+        dimnames(output)[[2]] <- yearnames
+        dimnames(output)[[3]] <- elemnames 
+        for(i in 1:length(cellnames)) {
+          for(elem in elemnames) {
+            output[i,,elem] <- temp[which(temp[,which(coltypes=="other")]==elem),which(coltypes=="data")[i]]
+          }
+        } 
       } else if(any(coltypes=="other") & headertype=="year"){
         output <- array(NA,c(ncells,nyears,ncols))
-  		  dimnames(output)[[1]] <- cellnames
-  		  dimnames(output)[[2]] <- yearnames
-  		  dimnames(output)[[3]] <- elemnames
-      	for(year in yearnames) {
-      	  for(elem in elemnames) {
-      	    output[,year,elem] <- temp[which(temp[,which(coltypes=="other")]==elem),year]
-    	    }
-      	}        	    		
-  		} else {
-  		  output <- array(as.vector(as.matrix(temp[,which(coltypes=="data")])),c(ncells,nyears,ncols))
-		    dimnames(output)[[1]] <- cellnames
-  		  dimnames(output)[[2]] <- yearnames
-  		  dimnames(output)[[3]] <- elemnames 		
+        dimnames(output)[[1]] <- cellnames
+        dimnames(output)[[2]] <- yearnames
+        dimnames(output)[[3]] <- elemnames
+        for(year in yearnames) {
+          for(elem in elemnames) {
+            output[,year,elem] <- temp[which(temp[,which(coltypes=="other")]==elem),year]
+          }
+        }        	    		
+      } else {
+        output <- array(as.vector(as.matrix(temp[,which(coltypes=="data")])),c(ncells,nyears,ncols))
+        dimnames(output)[[1]] <- cellnames
+        dimnames(output)[[2]] <- yearnames
+        dimnames(output)[[3]] <- elemnames 		
       }
-  		read.magpie <- output
+      read.magpie <- output
       attr(read.magpie,"comment") <- .readComment(file_name,comment.char=comment.char)
     }
-	} else {
-	  warning(paste("File",file_name,"does not exist"))
-		read.magpie <- NULL
-	}
-	if(as.array){
-	  read.magpie <- as.array(as.magpie(read.magpie))[,,]
-	} else {
-	  read.magpie <- as.magpie(read.magpie)
-	}
-	return(read.magpie)
+  } else {
+    warning(paste("File",file_name,"does not exist"))
+    read.magpie <- NULL
+  }
+  if(as.array){
+    read.magpie <- as.array(as.magpie(read.magpie))[,,]
+  } else {
+    read.magpie <- as.magpie(read.magpie)
+  }
+  return(read.magpie)
 }

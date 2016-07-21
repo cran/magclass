@@ -91,26 +91,24 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       if (is.null(getNames(x)) | is.null(getYears(x))) stop("Year and Data name are necessary for saving to NetCDF format")
       mag <- as.array(x)
       
-      #grid
+      #coord from magclass data
       coord <- magclassdata$half_deg[,c("lon","lat")]
-      coord[,"lon"]<-(coord[,"lon"]+180)/0.5+0.5
-      coord[,"lat"]<-(coord[,"lat"]+90)/0.5+0.5
+
       # netcdf generation ####
-      NODATA <- -9999
+      NODATA <- NA
       
       # 4D array: lon, lat, time, data
       lon <- seq(-179.75,179.75,by=0.5)
       lat <- seq(-89.75,89.75,by=0.5)
       time <- as.numeric(unlist(lapply(strsplit(dimnames(mag)[[2]],"y"),function(mag) mag[2])))
       data <- dimnames(mag)[[3]]
-      #data <- gsub("\\.","-",data)
-      
-      #Convert magpie data to array
+
+      #Convert magpie data to array; coord is used for mapping cells in mag to coordinates in netcdf
       cat("Converting MAgPIE Data to 720 x 360 array")
       netcdf <- array(NODATA,dim=c(720,360,dim(mag)[2],dim(mag)[3]),dimnames=list(lon,lat,time,data))
       pb <- txtProgressBar(min = 0, max = dim(mag)[1], style = 3)
-      for(i in 1:dim(mag)[1]){
-        netcdf[coord[i,1],coord[i,2],,] <- mag[i,,,drop=FALSE]
+      for (i in 1:ncells(mag)) {
+        netcdf[which(coord[i, 1]==lon), which(coord[i,2]==lat),,] <- mag[i,,,drop=FALSE]
         setTxtProgressBar(pb, i)
       }
       close(pb)
@@ -139,6 +137,7 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       ncdf4::nc_close(ncf)
       } else if(file_type=="cs3" | file_type=="cs3r") {
       if(file_type=="cs3r") dimnames(x)[[2]] <- sub("y","",dimnames(x)[[2]])
+      if(dim(x)[3]!=prod(fulldim(x)[[1]][-1:-2])) stop("Input data seems to be sparse but ",file_type," does not support sparse data. Please use ",sub("3","4",file_type)," instead!")
       x <- unwrap(x)
       if(dim(x)[1]==1 & length(grep("GLO",dimnames(x)[[1]]))==1) {
         dimnames(x)[[1]] <- "TODELETE"  
