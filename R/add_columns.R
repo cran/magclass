@@ -1,4 +1,23 @@
-
+#' add_columns
+#' 
+#' Function adds new columns to the existing magpie object. The new columns are
+#' filled with NAs.
+#' 
+#' 
+#' @param x MAgPIE object which should be extended.
+#' @param dim The number of the dimension that should be extended
+#' @param addnm The new columns within dimension "dim"
+#' @return The extended MAgPIE object
+#' @author Benjamin Bodirsky
+#' @seealso \code{\link{add_dimension}},\code{\link{mbind}}
+#' @examples
+#' 
+#'  data(population_magpie)
+#'  a <- add_columns(population_magpie)
+#'  str(a)
+#'  fulldim(a)
+#' 
+#' @export add_columns
 add_columns<-function(x,addnm=c("new"),dim=3.1){
   dim=old_dim_convention(dim)
   if (dim==1) {

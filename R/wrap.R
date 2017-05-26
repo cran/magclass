@@ -1,3 +1,21 @@
+#' Wrap
+#' 
+#' Reshape an array or a matrix by permuting and/or joining dimensions.
+#' 
+#' 
+#' @param x An array
+#' @param map A list of length equal to the number of dimensions in the
+#' reshaped array. Each element should be an integer vectors specifying the
+#' dimensions to be joined in corresponding new dimension. One element may
+#' equal NA to indicate that that dimension should be a join of all
+#' non-specified (remaining) dimensions. Default is to wrap everything into a
+#' vector.
+#' @param sep A character separating joined dimension names
+#' @note This function is extracted from the R.utils library which is licensed
+#' under LGPL>=2.1 and written by Henrik Bengtsson.
+#' @author Henrik Bengtsson, Jan Philipp Dietrich
+#' @seealso \code{\link{unwrap}},\code{\link{fulldim}}
+#' @export wrap
 wrap <- function (x, map = list(NA), sep = ".") {
     if (!is.array(x) && !is.matrix(x)) 
         stop("Argument 'x' is not an array or a matrix: ", class(x)[1])

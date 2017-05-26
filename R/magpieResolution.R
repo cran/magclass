@@ -1,3 +1,18 @@
+#' magpieResolution
+#' 
+#' Returns the Resolution of a MAgPIE object
+#' 
+#' 
+#' @param object An MAgPIE object
+#' @return "glo", "reg" or "cell"
+#' @author Benjamin Bodirsky
+#' @seealso \code{\link{population_magpie}}
+#' @examples
+#' 
+#' data(population_magpie)
+#' magpieResolution(population_magpie)
+#' 
+#' @export magpieResolution
 magpieResolution<- function(object) {
   if(!is.magpie(object)){stop("Object is no magpie object")
   } else {

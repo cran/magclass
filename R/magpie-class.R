@@ -1,3 +1,88 @@
+
+#' Class "magpie" ~~~
+#' 
+#' The MAgPIE class is a data format for cellular MAgPIE data with a close
+#' relationship to the array data format. \code{is.magpie} tests if \code{x} is
+#' an MAgPIE-object, \code{as.magpie} transforms \code{x} to an MAgPIE-object
+#' (if possible).
+#' 
+#' 
+#' @name magpie-class
+#' @aliases magpie-class as.magpie as.magpie-methods as.magpie,magpie-method
+#' as.magpie,array-method as.magpie,lpj-method as.magpie,data.frame-method
+#' as.magpie,numeric-method as.magpie,NULL-method as.magpie,quitte-method
+#' as.magpie,tbl_df-method
+#' is.magpie [,magpie-method [,magpie,ANY,ANY-method [<-,magpie,ANY,ANY-method
+#' [<-,magpie-method Ops,magpie,magpie-method
+#' @docType class
+#' @param x An object that should be either tested or transformed as/to an
+#' MAgPIE-object.
+#' @param ... additional arguments supplied for the conversion to a MAgPIE
+#' object. Allowed arguments for arrays and dataframes are \code{spatial} and
+#' \code{temporal} both expecting a vector of dimension or column numbers which
+#' contain the spatial or temporal information. By default both arguments are
+#' set to NULL which means that the \code{as.magpie} will try to detect
+#' automatically the temporal and spatial dimensions. The arguments will just
+#' overwrite the automatic detection. If you want to specify that the data does
+#' not contain a spatial or temporal dimension you can set the corresponding
+#' argument to 0. In addition \code{as.magpie} for data.frames is also
+#' expecting an argument called \code{datacol} which expects a number stating
+#' which is the first column containing data. This argument should be used if
+#' the dimensions are not detected corretly, e.g. if the last dimension column
+#' contains years which are then detected as values and therefore interpreted
+#' as first data column. In addition an argument \code{tidy=TRUE} can be used
+#' to indicate that the data.frame structure is following the rules of tidy
+#' data (last column is the data column all other columns contain dimension
+#' information). This information will help the conversion.
+#' @section Objects from the Class: Objects can be created by calls of the form
+#' \code{new("magpie", data, dim, dimnames, ...)}. MAgPIE objects have three
+#' dimensions (cells,years,datatype) and the dimensionnames of the first
+#' dimension have the structure "REGION.cellnumber". MAgPIE-objects behave the
+#' same like array-objects with 2 exceptions: \cr 1.Dimensions of the object
+#' will not collapse (e.g. \code{x[1,1,1]} will remain 3D instead of becoming
+#' 1D)\cr 2.It is possible to extract full regions just by typing
+#' \code{x["REGIONNAME",,]}. \cr\cr
+#' 
+#' Please mind following standards: \cr Header must not contain any purely
+#' numeric entries, but combinations of characters and numbers are allowed
+#' (e.g. "bla","12" is forbidden, wheras "bla","b12" is allowed)\cr Years
+#' always have the structure "y" + 4-digit number, e.g. "y1995"\cr Regions
+#' always have the structure 3 capital letters, e.g. "AFR" or "GLO"\cr\cr This
+#' standards are necessary to allow the scripts to detect headers, years and
+#' regions properly and to have a distinction to other data.
+#' @author Jan Philipp Dietrich
+#' @seealso \code{\link{read.magpie}}, \code{\link{write.magpie}},
+#' \code{\link{getRegions}}, \code{\link{getYears}}, \code{\link{getNames}},
+#' \code{\link{getCPR}}, \code{\link{ncells}}, \code{\link{nyears}},
+#' \code{\link{ndata}}
+#' @keywords classes
+#' @examples
+#' 
+#' showClass("magpie")
+#' 
+#' data(population_magpie)
+#' 
+#' # returning PAO and PAS for 2025
+#' population_magpie["PA",2025,,pmatch="left"]
+#' 
+#' # returning CPA for 2025
+#' population_magpie["PA",2025,,pmatch="right"]
+#' 
+#' # returning CPA PAO and PAS for 2025
+#' population_magpie["PA",2025,,pmatch=TRUE]
+#' 
+#' # returning PAS and 2025
+#' population_magpie["PAS",2025,]
+#' 
+#' # returning everything but values for PAS or values for 2025
+#' population_magpie["PAS",2025,,invert=TRUE]
+#' 
+#' 
+#' 
+#' @exportClass magpie
+#' @importFrom methods setClass
+
+
 setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
 
 .dimextract <- function(x,i,dim,pmatch=FALSE,invert=FALSE) {
@@ -24,7 +109,7 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
   
   pmatch1 <- ifelse(pmatch==TRUE | pmatch=="right",".*","")
   pmatch2 <- ifelse(pmatch==TRUE | pmatch=="left",".*","")
-  tmp <- lapply(paste("(^|\\.)",pmatch1,.escapeRegex(i),pmatch2,"(\\.|$)",sep=""),grep,dimnames(x)[[dim]])
+  tmp <- lapply(paste("(^|\\.)",pmatch1,escapeRegex(i),pmatch2,"(\\.|$)",sep=""),grep,dimnames(x)[[dim]])
   if(any(vapply(tmp,length,length(tmp))==0)) stop("Data element(s) \"",paste(i[vapply(tmp,length,length(tmp))==0],collapse="\", \""),"\" not existent in MAgPIE object!")
   tmp <- unlist(tmp)
   if(invert) {
@@ -53,7 +138,7 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
     sdims <- as.integer(round((dims-3)*10))
     maxdim <- nchar(gsub("[^\\.]","",names(dimnames(x))[3]))+1
     if(any(sdims>maxdim)) stop("Inconsistent dimension information. Data dimension specified which does not seem to exist!")
-    if(nrow(df)>0) df <- matrix(sapply(df,.escapeRegex),dim(df),dimnames=dimnames(df))
+    if(nrow(df)>0) df <- matrix(sapply(df,escapeRegex),dim(df),dimnames=dimnames(df))
     dmissing <- which(!(1:maxdim%in%sdims))
     sdims <- c(sdims,dmissing)
     for(d in dmissing) df <- cbind(df,"[^\\.]*")
@@ -88,6 +173,7 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
   }
 }
 
+#' @exportMethod [
 setMethod("[",
           signature(x = "magpie"),
           function (x, i, j, k, drop=FALSE,pmatch=FALSE,invert=FALSE) 
@@ -143,6 +229,7 @@ setMethod("[",
     }
 )
 
+#' @exportMethod [<-
 setMethod("[<-",
           signature(x = "magpie"),
           function (x, i, j, k, value, pmatch=FALSE) 

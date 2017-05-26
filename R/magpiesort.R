@@ -1,4 +1,21 @@
-
+#' MAgPIE-Sort
+#' 
+#' Brings the spatial and temporal structure of MAgPIE objects in the right
+#' order. This function is especially useful when you create new MAgPIE objects
+#' as the order typically should be correct for MAgPIE objects.
+#' 
+#' 
+#' @param x MAgPIE object which might not be in the right order.
+#' @return The eventually corrected MAgPIE object (right order in spatial in
+#' temporal dimension)
+#' @author Jan Philipp Dietrich
+#' @seealso \code{"\linkS4class{magpie}"}
+#' @examples
+#' 
+#'  data(population_magpie)
+#'  a <- magpiesort(population_magpie)
+#' 
+#' @export magpiesort
 magpiesort <- function(x) {
   if(!is.magpie(x)) stop("Input is not a MAgPIE object!")
   if(any(dim(x)==0)) return(x)

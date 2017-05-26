@@ -1,4 +1,98 @@
-read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,old_format=FALSE,comment.char="*",check.names=TRUE) {
+#' Read MAgPIE-object from file
+#' 
+#' Reads a MAgPIE-file and converts it to a 3D array of the structure
+#' (cells,years,datacolumn)
+#' 
+#' This function reads from 10 different MAgPIE file\_types. "cs2" is the new
+#' standard format for cellular data with or without header and the first
+#' columns (year,regiospatial) or only (regiospatial), "csv" is the standard
+#' format for regional data with or without header and the first columns
+#' (year,region,cellnumber) or only (region,cellnumber). "cs3" is a format
+#' similar to csv and cs2, but with the difference that it supports
+#' multidimensional data in a format which can be read by GAMS, "put" is a
+#' newly supported format which is mosty used for the REMIND-MAgPIE coupling.
+#' This format is only partly supported at the moment.  "asc" is the AsciiGrid
+#' format (for example used for Arc Gis data).  "nc" is the netCDF format (only
+#' "nc" files written by write.magpie can be read).  All these variants are
+#' read without further specification. "magpie" (.m) and "magpie zipped" (.mz)
+#' are new formats developed to allow a less storage intensive management of
+#' MAgPIE-data. The only difference between both formats is that .mz is gzipped
+#' whereas .m is not compressed. So .mz needs less memory, whereas .m might
+#' have a higher compatibility to other languages. \cr\cr Since library version
+#' 1.4 read.magpie can also read regional or global MAgPIE csv-files.
+#' 
+#' @param file_name file name including file ending (wildcards are supported).
+#' Optionally also the full path can be specified here (instead of splitting it
+#' to file\_name and file\_folder)
+#' @param file_folder folder the file is located in (alternatively you can also
+#' specify the full path in file\_name - wildcards are supported)
+#' @param file_type format the data is stored in. Currently 12 formats are
+#' available: "cs2" (cellular standard MAgPIE format), "csv" (regional standard
+#' MAgPIE format), "cs3" (multidimensional format compatible to GAMS), "cs4"
+#' (alternative multidimensional format compatible to GAMS, in contrast to cs3
+#' it can also handle sparse data), "csvr", "cs2r", "cs3r" and "cs4r" which are
+#' the same formats as the previous mentioned ones with the only difference
+#' that they have a REMIND compatible format, "m" (binary MAgPIE format
+#' "magpie"), "mz" (compressed binary MAgPIE format "magpie zipped") "put"
+#' (format used primarily for the REMIND-MAgPIE coupling) and "asc",
+#' (ASCII-Grid format as used by ArcGis) . If file\_type=NULL the file ending
+#' of the file\_name is used as format. If format is different to the formats
+#' mentioned standard MAgPIE format is assumed.
+#' @param as.array Should the input be transformed to an array? This can be
+#' useful for regional or global inputs, but all advantages of the magpie-class
+#' are lost.
+#' @param old_format used to read files in old MAgPIE-format (unused space was
+#' not located at the beginning of the file), will be removed soon.
+#' @param comment.char character: a character vector of length one containing a
+#' single character or an empty string. Use "" to turn off the interpretation
+#' of comments altogether. If a comment is found it will be stored in
+#' attr(,"comment"). In text files the comment has to be at the beginning of
+#' the file in order to be recognized by read.magpie.
+#' @param check.names logical. If TRUE then the names of the variables in the
+#' data frame are checked to ensure that they are syntactically valid variable
+#' names. Same functionality as in read.table.
+#' @return \item{x}{MAgPIE-object}
+#' @note
+#' 
+#' The binary MAgPIE formats .m and .mz have the following content/structure
+#' (you only have to care for that if you want to implement
+#' read.magpie/write.magpie functions in other languages): \cr \cr 
+#' [ FileFormatVersion | Current file format version number (currently 2) | integer | 2 Byte ] \cr 
+#' [ nchar_comment | Number of characters of the file comment | integer | 4 Byte ] \cr 
+#' [ nchar_sets | Number of characters of all regionnames + 2 delimiter | integer | 2 Byte] \cr 
+#' [ not used | Bytes reserved for later file format improvements | integer | 92 Byte ] \cr
+#' [ nyears | Number of years | integer | 2 Byte ]\cr 
+#' [ year_list | All years of the dataset (0, if year is not present) | integer | 2*nyears Byte ] \cr 
+#' [ nregions | Number of regions | integer | 2 Byte ] \cr 
+#' [ nchar_reg | Number of characters of all regionnames + (nreg-1) for delimiters | integer | 2 Byte ] \cr 
+#' [ regions | Regionnames saved as reg1\\nreg2 (\\n is the delimiter) | character | 1*nchar_reg Byte ] \cr 
+#' [ cpr | Cells per region | integer | 4*nreg Byte ] \cr 
+#' [ nelem | Total number of data elements | integer | 4 Byte ] \cr 
+#' [ nchar_data | Number of char. of all datanames + (ndata - 1) for delimiters | integer | 4 Byte ] \cr
+#' [ datanames | Names saved in the format data1\\ndata2 (\\n as del.) | character | 1*nchar_data Byte ] \cr 
+#' [ data | Data of the MAgPIE array in vectorized form | numeric | 4*nelem Byte ] \cr 
+#' [ comment | Comment with additional information about the data | character | 1*nchar_comment Byte ] \cr 
+#' [ sets | Set names with \\n as delimiter | character | 1*nchar_sets Byte] \cr
+#' 
+#' Please note that if your data in the spatial dimension is not ordered by
+#' region name each new appearance of a region which already appeared before
+#' will be treated and counted as a new region (e.g.
+#' AFR.1,AFR.2,CPA.3,CPA.4,AFR.5 will count AFR twice and nregions will be set
+#' to 3!).
+#' @author Jan Philipp Dietrich
+#' @seealso \code{"\linkS4class{magpie}"}, \code{\link{write.magpie}}
+#' @examples
+#' 
+#' \dontrun{
+#' a <- read.magpie("lpj_yield_ir.csv")
+#' write.magpie(a,"lpj_yield_ir.mz")
+#' }
+#'
+#' @export read.magpie
+#' @importFrom methods is new
+#' @importFrom utils read.csv
+#' 
+read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,old_format=FALSE,comment.char="*",check.names=FALSE) {
   
   file_name <- paste(file_folder,file_name,sep="")  
   
@@ -31,7 +125,7 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
         read_repeat <- TRUE
         while(read_repeat){
           tmp <- readLines(zz,1)
-          if(length(grep(paste("^",.escapeRegex(comment.char),sep=""),tmp))) {
+          if(length(grep(paste("^",escapeRegex(comment.char),sep=""),tmp))) {
             comment <- c(comment,tmp)
           } else {
             read_repeat <- FALSE
@@ -117,7 +211,7 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
       read.magpie <- as.magpie(tmparr)   
       attr(read.magpie,"comment") <- .readComment(file_name,comment.char=comment.char)
     } else if(file_type=="cs4" | file_type=="cs4r") {
-      x <- read.csv(file_name,comment.char=comment.char,header=FALSE)
+      x <- read.csv(file_name,comment.char=comment.char,header=FALSE, check.names=check.names)
       read.magpie <- as.magpie(x,tidy=TRUE)
       attr(read.magpie,"comment") <- .readComment(file_name,comment.char=comment.char)
     } else if(file_type=="asc"){
@@ -186,9 +280,9 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
     } else {
       #check for header
       if(file_type=="put") {
-        temp <- read.csv(file_name,nrow=1,header=FALSE,sep="\t",comment.char=comment.char)      
+        temp <- read.csv(file_name,nrow=1,header=FALSE,sep="\t",comment.char=comment.char, check.names=check.names)      
       } else {
-        temp <- read.csv(file_name,nrow=1,header=FALSE,comment.char=comment.char)
+        temp <- read.csv(file_name,nrow=1,header=FALSE,comment.char=comment.char, check.names=check.names)
       }      
       
       #check for numeric elements in first row, which means a missing header
@@ -198,9 +292,9 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
       }  		
       
       if(file_type=="put") {
-        temp <- read.csv(file_name,header=header,sep="\t",comment.char=comment.char)      
+        temp <- read.csv(file_name,header=header,sep="\t",comment.char=comment.char, check.names=check.names)      
       } else {
-        temp <- read.csv(file_name,header=header,comment.char=comment.char)
+        temp <- read.csv(file_name,header=header,comment.char=comment.char, check.names=check.names)
       }
       
       #analyse column content
@@ -214,8 +308,16 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
           coltypes[column] <- "regiospatial"  
         } else if(!is.numeric(temp[1,column])) {
           coltypes[column] <- "other"
-        } else if(sum(coltypes=="cell")==0 & length(temp[,column])%%max(temp[,column])==0 & suppressWarnings(try(all(unique(temp[,column])==1:max(temp[,column])),silent=TRUE)==TRUE)) {
-          coltypes[column] <- "cell"
+        } else if(sum(coltypes=="cell")==0 & all(!is.na(temp[,column])) & all(temp[,column]!=0)) {
+          if(length(temp[,column])%%max(temp[,column])==0) {
+            if(suppressWarnings(try(all(unique(temp[,column])==1:max(temp[,column])),silent=TRUE)==TRUE)) {
+              coltypes[column] <- "cell"
+            } else {
+              coltypes[column] <- "data"
+            }
+          } else {
+            coltypes[column] <- "data"
+          }
         } else {
           coltypes[column] <- "data"
         }
@@ -349,6 +451,7 @@ read.magpie <- function(file_name,file_folder="",file_type=NULL,as.array=FALSE,o
         if(any(coltypes=="region")){
           tmp_regionnames <- levels(temp[,which(coltypes=="region")])
           regionnames <- tmp_regionnames[temp[,which(coltypes=="region")]]
+          if(ncells==length(tmp_regionnames)) regionnames <- unique(regionnames)
         } else if(headertype=="region") {
           regionnames <- dimnames(temp)[[2]][which(coltypes=="data")]       		  
           ncells <- ncells*length(regionnames)

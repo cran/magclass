@@ -1,14 +1,19 @@
 tidy2magpie <- function(x,spatial=NULL,temporal=NULL) {
   # assumption: dataframe format in which only the very last
   #             column contains values!
+  if("data.frame" %in% class(x)) {
+    class(x) <- "data.frame"
+  } else {
+    stop("Data does not seem to be a data.frame!")
+  }
   sep <- "."
   
   colnames(x) <- make.unique(colnames(x),sep="")
   
   if(dim(x)[1]==0) return(copy.attributes(x,new.magpie(NULL)))
   
-  if(is.null(spatial))     spatial  <- colnames(x)[apply(x,2,is.spatial)]
-  if(is.null(temporal))    temporal <- colnames(x)[apply(x,2,is.temporal)]                                                                                         
+  if(is.null(spatial))     spatial  <- colnames(x[-length(x)])[apply(x[-length(x)],2,is.spatial)]
+  if(is.null(temporal))    temporal <- colnames(x[-length(x)])[apply(x[-length(x)],2,is.temporal)]                                                                                         
   if(is.numeric(spatial))  spatial  <- colnames(x)[spatial]
   if(is.numeric(temporal)) temporal <- colnames(x)[temporal]
     

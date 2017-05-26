@@ -1,3 +1,18 @@
+#' magpieComp
+#' 
+#' Function that compares two magpie objects.
+#' 
+#' Function that compares two magpie objects.
+#' 
+#' @param bench A \code{MAgPIE} object.
+#' @param comp A \code{MAgPIE} object.
+#' @param reg The region(s) you want to focus on
+#' @return a list containing a1) the names found only in bench, a2) the names
+#' found only in comp, b) a sorted data frame with the largest relative
+#' difference between bench and comp in percentage values, and c) a magclass
+#' object with the same values
+#' @author Anastasis Giannousakis
+#' @export magpieComp
 magpieComp<-function(bench,comp,reg=NA) {
 
   if(!is.na(reg)){

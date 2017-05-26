@@ -1,3 +1,5 @@
+#' @describeIn ncells count datasets
+#' @export
 ndata <- function(x,fulldim=FALSE) {
   if(fulldim==FALSE){
     return(dim(x)[3])

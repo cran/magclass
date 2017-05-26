@@ -1,3 +1,6 @@
+# Made an internal function since it is implemented in the quitte package and
+# used only in context with quitte objects.
+#' @importFrom methods is
 is.quitte <- function(x, warn=TRUE) {
   # object is not formally defined as quitte class
   if(!is(x,"quitte")) return(FALSE)

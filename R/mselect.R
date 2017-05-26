@@ -1,5 +1,5 @@
 .mselect_support <- function(search,where,ndim,names) {
-  search <- .escapeRegex(search)
+  search <- escapeRegex(search)
   search <- paste0("(",paste(search,collapse="|"),")")
   search <- paste0("^",paste(rep("[^\\.]*\\.",where-1),collapse=""),search,paste(rep("\\.[^\\.]*",ndim-where),collapse=""),"$")
   return(names[grep(search,names)])
@@ -38,12 +38,45 @@
   return(m)
 }
 
+
+
+
+
+#' MSelect
+#' 
+#' Select values from a MAgPIE-object
+#' 
+#' This functions only work for MAgPIE objects with named dimensions as the
+#' dimension name (set_name) has to be used to indicate in which dimension the
+#' entries should be searched for!
+#' 
+#' @aliases mselect mselect<-
+#' @param x MAgPIE object
+#' @param ... entry selections of the form
+#' \code{set_name=c(set_elem1,set_elem2)}. Alternatively a single list element
+#' containing these selections can be provided.
+#' @param collapseNames Boolean which decides whether names should be collapsed
+#' or not.
+#' @param value values on which the selected magpie entries should be set.
+#' @return The reduced MAgPIE object containing only the selected entries or
+#' the full MAgPIE object in which a selection of entries was manipulated.
+#' @author Jan Philipp Dietrich
+#' @seealso \code{\link{collapseNames}}, \code{"\linkS4class{magpie}"}
+#' @examples
+#' 
+#'  data(population_magpie)
+#'  population_magpie
+#'  mselect(population_magpie,i=c("AFR","EUR"),scenario="A2",t="y2035")
+#' 
+#' @export
 mselect <- function(x,...,collapseNames=FALSE) {
   m <- .mselect_coords(x,...)
   if(collapseNames) return(collapseNames(x[m$i,m$j,m$k]))
   return(x[m$i,m$j,m$k])
 }
 
+#' @describeIn mselect replace values in magpie object
+#' @export
 "mselect<-" <- function(x,...,value) {
   m <- .mselect_coords(x,...)
   x[m$i,m$j,m$k] <- value

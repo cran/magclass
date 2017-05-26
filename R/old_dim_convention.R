@@ -1,3 +1,18 @@
+#' old_dim_convention
+#' 
+#' Transforms new dim convention (e.g. 3.2) into old dim convention(e.g. 4)
+#' 
+#' 
+#' @param dim The dim number in the new convention
+#' @return The dim number according to the old convention
+#' @author Benjamin Bodirsky
+#' @seealso \code{\link{add_columns}},\code{\link{add_dimension}}
+#' @examples
+#' 
+#'   dim=old_dim_convention(3.2)
+#'   dim=old_dim_convention(1.1)
+#' 
+#' @export old_dim_convention
 old_dim_convention<-function(dim){
   dim<-as.character(dim)
   elemsplit <- as.numeric(as.vector(strsplit(dim,".",fixed=TRUE)[[1]]))

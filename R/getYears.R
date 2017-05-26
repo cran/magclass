@@ -1,3 +1,32 @@
+#' Get years
+#' 
+#' Extracts years of a MAgPIE-object
+#' 
+#' setYears is a shortcut to use a MAgPIE object with manipulated year names.
+#' setYears uses the variable names "object" and "nm" in order to be consistent
+#' to the already existing function setNames.
+#' 
+#' @aliases getYears getYears<- setYears
+#' @param x,object MAgPIE object
+#' @param as.integer Switch to decide, if output should be the used year-name
+#' (e.g. "y1995") or the year as integer value (e.g. 1995)
+#' @param value,nm Years the data should be set to. Either supplied as a vector
+#' of integers or a vector of characters in the predefined year format
+#' ("y0000"). If only 1 year exist you can also set the name of the year to
+#' NULL.
+#' @return getYears returns years of the MAgPIE-object, whereas setYears
+#' returns the MAgPIE object with the manipulated years.
+#' @author Jan Philipp Dietrich
+#' @seealso \code{\link{getRegions}}, \code{\link{getNames}},
+#' \code{\link{setNames}}, \code{\link{getCPR}}, \code{\link{read.magpie}},
+#' \code{\link{write.magpie}}, \code{"\linkS4class{magpie}"}
+#' @examples
+#' 
+#'  a <- as.magpie(1)
+#'  getYears(a)
+#'  setYears(a,1995)
+#' 
+#' @export
 getYears <- function(x,as.integer=FALSE) {
   if(as.integer) {
     return(as.integer(substring(dimnames(x)[[2]],2)))  
@@ -6,6 +35,8 @@ getYears <- function(x,as.integer=FALSE) {
   }
 }
 
+#' @describeIn getYears rename years
+#' @export
 "getYears<-" <- function(x,value) {
   if(!is.null(value)) if(length(value)!=nyears(x)) stop("Wrong number of years supplied!")
   if(nyears(x)==0) return(x)

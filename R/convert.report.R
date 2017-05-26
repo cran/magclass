@@ -1,3 +1,32 @@
+#' Converts a report from one model to another
+#' 
+#' This function converts the content of a reporting file from one model to
+#' another
+#' 
+#' The function converts data based on a region mapping and transformation
+#' rules which are stored in the variable magclassdata which comes with this
+#' library.
+#' 
+#' @param rep Report. Either the file name of a mif file or a report already
+#' read in in R.
+#' @param inmodel Model the input comes from. If NULL the script tries to
+#' detect the inmodel automatically.
+#' @param outmodel Model format the data should be converted to. Currently,
+#' only "MAgPIE" is available
+#' @param full Boolean deciding whether only the converted output should be
+#' returned (FALSE) or the new output together with the input (TRUE)
+#' @param as.list if TRUE a list is returned (default), if FALSE it is tried to
+#' merge all information in one MAgPIE object (still under development and
+#' works currently only if the entries for the different models and scenarios
+#' have exactly the same regions and years).
+#' @author Jan Philipp Dietrich
+#' @seealso
+#' \code{\link{read.report}},\code{\link{write.report}},\code{\link{magclassdata}}
+#' @examples
+#' 
+#' \dontrun{convert.report("report.mif")}
+#' 
+#' @export convert.report
 convert.report <- function(rep,inmodel=NULL,outmodel="MAgPIE",full=FALSE,as.list=TRUE) {
   # Commets would improve the code
   .convert <- function(input,inmodel=NULL,outmodel="MAgPIE",full=FALSE) {
@@ -6,6 +35,7 @@ convert.report <- function(rep,inmodel=NULL,outmodel="MAgPIE",full=FALSE,as.list
     if(!(inmodel %in% names(map[[outmodel]]))) stop("No existing transformation rules for input model \"",inmodel,"\" in combination with output model \"",outmodel,"\"!",call.=FALSE)
     if(outmodel %in% names(input))             stop("Input already contains data for model \"",outmodel,"\"",call.=FALSE)
     map <- map[[outmodel]][[inmodel]]
+    if(!inmodel %in% names(input)) stop(paste0("The inmodel ",inmodel," is not available in the names of input: ",names(input)))
     mag <- input[[inmodel]]
     if("GLO" %in% getRegions(mag)) map$GLO <- "GLO"
     outmag <- mag[rep(1,length(map)),,unlist(magclassdata$trans)[unlist(magclassdata$trans) %in% getNames(mag)]]

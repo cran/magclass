@@ -1,3 +1,31 @@
+#' time_interpolate
+#' 
+#' Function to extrapolate missing years in MAgPIE objects.
+#' 
+#' 
+#' @param dataset An MAgPIE object
+#' @param interpolated_year Vector of years, of which values are required. Can
+#' be in the formats 1999 or y1999.
+#' @param integrate_interpolated_years FALSE returns only the dataset of the
+#' interpolated year, TRUE returns the whole dataset, including all years of
+#' data and the itnerpolated year
+#' @param extrapolation_type Determines what happens if extrapolation is
+#' required, i.e. if a requested year lies outside the range of years in
+#' \code{dataset}. Specify "linear" for a linear extrapolation. "constant" uses
+#' the value from dataset closest in time to the requested year.
+#' @return Uses linear extrapolation to estimate the values of the interpolated
+#' year, using the values of the two surrounding years. If the value is before
+#' or after the years in data, the two closest neighbours are used for
+#' extrapolation.
+#' @author Benjamin Bodirsky, Jan Philipp Dietrich
+#' @seealso \code{\link{lin.convergence}}
+#' @examples
+#' 
+#' data(population_magpie)
+#' time_interpolate(population_magpie,"y2000",integrate=TRUE)
+#' time_interpolate(population_magpie,c("y1980","y2000"),integrate=TRUE,extrapolation_type="constant")
+#' 
+#' @export time_interpolate
 time_interpolate <- function(dataset, interpolated_year, integrate_interpolated_years=FALSE,extrapolation_type="linear") {
   if(!is.magpie(dataset)){stop("Invalid Data format of measured data. Has to be a MAgPIE-object.")}
   if (all(isYear(interpolated_year,with_y=FALSE))) { interpolated_year<-paste("y",interpolated_year,sep="")} else 
@@ -62,7 +90,6 @@ time_interpolate <- function(dataset, interpolated_year, integrate_interpolated_
     }
     dataset<-abind::abind(dataset,dataset_interpolated,along=2)
   }
-  gc()
   dataset <- as.magpie(dataset)
   dataset <- dataset[,sort(getYears(dataset)),]
   return(dataset)

@@ -1,4 +1,23 @@
-
+#' place_x_in_y
+#' 
+#' Function positions magpie object x into magpie object y.
+#' 
+#' 
+#' @param x Object to be placed.
+#' @param y Object in which x shall be placed
+#' @param expand T: if x is larger than y, new columns are added.
+#' @return The combination of x and y. x overwrites y values which are in the
+#' same place.
+#' @author Benjamin Bodirsky
+#' @seealso
+#' \code{\link{add_dimension}},\code{\link{add_columns}},\code{\link{mbind}}
+#' @examples
+#' 
+#'  data(population_magpie)
+#'  x <- population_magpie[,"y1995",]*0.2
+#'  a <- place_x_in_y(x, population_magpie)
+#' 
+#' @export place_x_in_y
 place_x_in_y<-function(x,y,expand=T){
   if(!all(getYears(x)%in%getYears(y))) {
     if (expand){

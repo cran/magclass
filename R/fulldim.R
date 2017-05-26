@@ -1,3 +1,23 @@
+#' Reconstructs full dimensionality of MAgPIE objects
+#' 
+#' If a MAgPIE object is created from a source with more than one data
+#' dimension, these data dimensions are combined to a single dimension. fulldim
+#' reconstructs the original dimensionality and reports it.
+#' 
+#' 
+#' @param x A MAgPIE-object
+#' @param sep A character separating joined dimension names
+#' @return A list containing in the first element the dim output and in the
+#' second element the dimnames output of the reconstructed array.
+#' @author Jan Philipp Dietrich
+#' @seealso \code{\link{as.magpie}},\code{\link{unwrap}},\code{\link{wrap}}
+#' @examples
+#' 
+#'   a <- as.magpie(array(1:6,c(3,2),list(c("bla","blub","ble"),c("up","down"))))
+#'   fulldim(a)
+#' 
+#' 
+#' @export fulldim
 fulldim <- function(x,sep=".") {
   if(!is.null(dimnames(x)[[3]])){
     elemsplit <- strsplit(dimnames(x)[[3]],sep,fixed=TRUE)

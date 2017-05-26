@@ -1,3 +1,5 @@
+#' @importFrom methods Ops callGeneric new
+#' @exportMethod Ops
 setMethod(Ops, signature(e1='magpie', e2='magpie'),
           function(e1, e2){
             if(is.null(dim(e1)) & is.null(dim(e2))) {

@@ -1,3 +1,4 @@
+#' @export
 mbind2 <- function(...) { 
  isnull   <- sapply(list(...),is.null)
  ismagpie <- sapply(list(...),is.magpie)

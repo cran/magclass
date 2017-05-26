@@ -1,4 +1,26 @@
-
+#' Read file in report format
+#' 
+#' This function reads the content of a reporting file (a file in the model
+#' intercomparison file format *.mif) into a list of MAgPIE objects or a single
+#' MAgPIE object
+#' 
+#' 
+#' @param file file name the object should be read from.
+#' @param as.list if TRUE a list is returned (default), if FALSE it is tried to
+#' merge all information in one MAgPIE object (still under development and
+#' works currently only if the entries for the different models and scenarios
+#' have exactly the same regions and years).
+#' @author Jan Philipp Dietrich
+#' @seealso \code{\link{write.report}}
+#' @examples
+#' 
+#' \dontrun{
+#'   read.report("report.csv")
+#' }
+#' 
+#' @export read.report
+#' @importFrom utils read.table
+#' 
 read.report <- function(file,as.list=TRUE) {
   
   .trim <- function(a) return(gsub("(^ +)|( +$)", "",as.character(a)))
@@ -64,6 +86,9 @@ return(as.magpie(mag,spatial=1,temporal=2))
     raw$Region   <- .trim(raw$Region)
     raw$Unit     <- .trim(raw$Unit)
     raw$Variable <- .trim(raw$Variable)
+    
+    raw$Model[is.na(raw$Model)] <- "NA"
+    raw$Scenario[is.na(raw$Scenario)] <- "NA"
     
     raw$Region <- sub("R5\\.2","",raw$Region)
     raw$Region <- sub("World|glob","GLO",raw$Region)

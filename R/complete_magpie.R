@@ -1,5 +1,24 @@
-
-
+#' complete_magpie
+#' 
+#' MAgPIE objects can be incomplete to reduce memory. This function blows up a
+#' magpie object to its real dimensions, so you can apply unwrap.
+#' 
+#' 
+#' @param x MAgPIE object which should be completed.
+#' @param fill Value that shall be written into the missing entries
+#' @return The completed MAgPIE object
+#' @author Benjamin Bodirsky
+#' @seealso \code{\link{add_dimension}},\code{\link{clean_magpie}}
+#' @examples
+#' 
+#'  data(population_magpie)
+#'  a <- complete_magpie(population_magpie)
+#'  b <- add_dimension(a)
+#'  c <- add_dimension(a,nm="dummy2")
+#'  incomplete<-mbind(b[,,1],c)
+#'  d<-complete_magpie(incomplete)
+#' 
+#' @export complete_magpie
 complete_magpie<-function(x,fill=NA) {
   full<-fulldim(x)[[2]]
   permute<-full[[3]]

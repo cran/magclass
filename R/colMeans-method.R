@@ -1,3 +1,5 @@
+#' @importFrom methods new
+#' @exportMethod colMeans
 setMethod("colMeans",
           signature(x = "magpie"),
           function (x, na.rm = FALSE, dims = 1, ...) 

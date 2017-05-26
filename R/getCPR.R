@@ -1,3 +1,21 @@
+#' Get cells per region
+#' 
+#' Counts how many cells each region has and returns it as vector
+#' 
+#' 
+#' @param x MAgPIE object or a resolution written as numeric (currently only
+#' data for 0.5 degree resolution is available).
+#' @return cells per region
+#' @author Jan Philipp Dietrich
+#' @seealso \code{\link{getRegions}}, \code{\link{read.magpie}},
+#' \code{\link{write.magpie}}
+#' @examples
+#' 
+#' # a <- read.magpie("example.mz")
+#' # getCPR(a)
+#' getCPR(0.5)
+#' 
+#' @export getCPR
 getCPR <- function(x) {
   if(!is.magpie(x)) {
     if(x==0.5) {

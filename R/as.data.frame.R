@@ -1,3 +1,32 @@
+#' ~~ Methods for Function as.data.frame ~~
+#' 
+#' ~~ Methods for function \code{as.data.frame} ~~
+#' 
+#' 
+#' @name as.data.frame-methods
+#' @aliases as.data.frame as.data.frame-methods as.data.frame,ANY-method
+#' as.data.frame,magpie-method
+#' @docType methods
+#' @param x A MAgPIE-object
+#' @param rev The revision of the algorithm that should be used for conversion.
+#' rev=1 creates columns with the predefined names Cell, Region, Year, Data1,
+#' Data2,... and Value, rev=2 uses the set names of the MAgPIE object for
+#' naming and adds an attribute "dimtype" to the data.frame which contains
+#' information about the types of the different columns (spatial, temporal,
+#' data or value).
+#' @section Methods: \describe{
+#' 
+#' \item{list("signature(x = \"magpie\")")}{ Conversion creates columns for
+#' Cell, Region, Year, Data1, Data2,... and Value } }
+#' @keywords methods
+#' @examples
+#' 
+#' data(population_magpie)
+#' head(as.data.frame(population_magpie))
+#' head(as.data.frame(population_magpie,rev=2))
+#' 
+#' @importFrom utils type.convert
+#' @exportMethod as.data.frame
 
 setMethod("as.data.frame",
   signature(x="magpie"),
@@ -13,8 +42,12 @@ setMethod("as.data.frame",
         x <- as.data.frame(as.table(x))
       }
       if(all(grepl(".",x[[3]],fixed=TRUE))) {
+        levels(x[[3]]) <- gsub("\\.$","\\.STRINGTORESETAG",levels(x[[3]]))
         tmp <- data.frame(t(matrix(unlist(strsplit(as.character(x[[3]]),split="\\.")),ncol=nrow(x))),stringsAsFactors=FALSE)
-        for(i in 1:ncol(tmp)) tmp[[i]] <- factor(tmp[[i]],unique(tmp[[i]]))
+        for(i in 1:ncol(tmp)) {
+          tmp[[i]] <- factor(tmp[[i]],unique(tmp[[i]]))
+          levels(tmp[[i]]) <- gsub("STRINGTORESETAG","",levels(tmp[[i]]))
+        }
         x <- cbind(x[,1:2],tmp,x[4])
       }
       colnames(x) <- c("Region","Year",paste("Data",1:(dim(x)[2]-3),sep=""),"Value")

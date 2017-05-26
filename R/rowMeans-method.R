@@ -1,3 +1,5 @@
+#' @exportMethod rowMeans
+#' 
 setMethod("rowMeans",
           signature(x = "magpie"),
           function (x, na.rm = FALSE, dims = 1, ...) 

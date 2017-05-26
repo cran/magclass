@@ -1,9 +1,45 @@
+#' mbind
+#' 
+#' Merges MAgPIE-objects with identical structure in two dimensions. If data
+#' differs in the temporal or spatial dimension each year or region/cell must
+#' appear only once!
+#' 
+#' mbind2 is a reimplementation from mbind which had the aim to increase its
+#' overall memory efficiency. However, it is not clear which function is better
+#' and there are also some changes in behaviour of both functions. Therefore,
+#' the new version was just added as mbind2 instead of using it as a full
+#' replacement for mbind.
+#' 
+#' @aliases mbind mbind2
+#' @param ... MAgPIE objects or a list of MAgPIE objects that should be merged.
+#' @return The merged MAgPIE object
+#' @author Jan Philipp Dietrich, Misko Stevanovic
+#' @seealso \code{"\linkS4class{magpie}"}
+#' @examples
+#' 
+#' m <- new.magpie(c("AFR","CPA","EUR"), c(1995,2005),"Data1",fill=c(1,2,3,4,5,6))
+#' ms <- dimSums(m, dims=1)
+#' mbind(m, ms)
+#' my <- new.magpie(getRegions(m), 2010, getNames(m), fill=c(6,6,4))
+#' mbind(m, my)
+#' md <- new.magpie(getRegions(m), getYears(m), "Data2", fill=c(7,6,5,7,8,9))
+#' mbind(m, md)
+#' 
+#' data(population_magpie)
+#' a <- mbind(population_magpie,population_magpie)
+#' dim(population_magpie)
+#' dim(a)
+#' 
+#' 
+#' @export mbind
+#' @importFrom methods new
 mbind <- function(...) {  
   inputs <- list(...)
+  if(length(inputs)==1 & is.list(inputs[[1]])) inputs <- inputs[[1]]
   #Remove NULL elements from list
   for(i in length(inputs):1) if(is.null(inputs[[i]])) inputs[[i]] <- NULL
   
-  if(length(inputs)==1 & is.list(inputs[[1]])) inputs <- inputs[[1]]
+
   regio <- NULL
   cells <- NULL
   elems <- NULL
