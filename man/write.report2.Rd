@@ -5,7 +5,8 @@
 \title{Write file in report format}
 \usage{
 write.report2(x, file = NULL, model = NULL, scenario = NULL,
-  unit = NULL, ndigit = 4, append = FALSE, skipempty = TRUE)
+  unit = NULL, ndigit = 4, append = FALSE, skipempty = TRUE,
+  extracols = NULL)
 }
 \arguments{
 \item{x}{MAgPIE object or a list of lists with MAgPIE objects as created by
@@ -31,6 +32,8 @@ existing file or an existing file should be overwritten}
 
 \item{skipempty}{Determines whether empty entries (all data NA) should be
 written to file or not.}
+
+\item{extracols}{names of dimensions which should appear in the output as additional columns}
 }
 \description{
 This function writes the content of a MAgPIE object into a file or returns

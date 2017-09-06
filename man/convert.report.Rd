@@ -15,7 +15,7 @@ read in in R.}
 detect the inmodel automatically.}
 
 \item{outmodel}{Model format the data should be converted to. Currently,
-only "MAgPIE" is available}
+"MAgPIE" and "REMIND" are available}
 
 \item{full}{Boolean deciding whether only the converted output should be
 returned (FALSE) or the new output together with the input (TRUE)}
