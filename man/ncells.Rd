@@ -5,9 +5,6 @@
 \alias{nyears}
 \alias{ndata}
 \alias{nregions}
-\alias{ndata}
-\alias{nregions}
-\alias{nyears}
 \title{Count elements}
 \usage{
 ncells(x)

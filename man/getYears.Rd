@@ -4,8 +4,6 @@
 \alias{getYears}
 \alias{getYears<-}
 \alias{setYears}
-\alias{getYears<-}
-\alias{setYears}
 \title{Get years}
 \usage{
 getYears(x, as.integer = FALSE)

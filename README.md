@@ -40,6 +40,18 @@ The package comes with a vignette describing the basic functionality of the pack
 vignette("magclass")
 ```
 
+
+## Travis CI Integration
+
+[![Travis build status](https://travis-ci.com/pik-piam/magclass.svg?branch=master)](https://travis-ci.com/pik-piam/magclass)
+
+
 ## Questions / Problems
 
 In case of questions / problems please contact Jan Dietrich <dietrich@pik-potsdam.de>.
+
+
+## Citation
+
+[![DOI](https://zenodo.org/badge/93050064.svg)](https://zenodo.org/badge/latestdoi/93050064)
+

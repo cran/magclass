@@ -4,7 +4,8 @@
 \alias{write.reportProject}
 \title{Write file in specific project format}
 \usage{
-write.reportProject(mif, mapping, file = NULL, max_file_size = NULL, ...)
+write.reportProject(mif, mapping, file = NULL, max_file_size = NULL,
+  format = "default", ...)
 }
 \arguments{
 \item{mif}{Lists with magpie-objects or a magpie-object as created by read.report or a path to
@@ -23,6 +24,8 @@ Unit is a name of the unit without ()
 \item{file}{name of the project specipic report, default=NULL means that the names of the header of the reporting is used}
 
 \item{max_file_size}{maximum file size in MB; if size of file exceeds max_file_size reporting is split into multiple files}
+
+\item{format}{available reporting formats: "default", "IAMC" and "AgMIP". "default" and "IAMC" are very similar (wide format for year) and differ only in the use of semi-colon (default) and comma (IAMC) as seperator. "AgMIP" is in long format.}
 
 \item{...}{arguments passed to write.report and write.report2}
 }

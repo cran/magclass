@@ -4,8 +4,6 @@
 \alias{getComment}
 \alias{getComment<-}
 \alias{setComment}
-\alias{getComment<-}
-\alias{setComment}
 \title{getComment}
 \usage{
 getComment(x)

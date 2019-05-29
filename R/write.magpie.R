@@ -3,13 +3,14 @@
 #' Writes a MAgPIE-3D-array (cells,years,datacolumn) to a file in one of three
 #' MAgPIE formats (standard, "magpie", "magpie zipped")
 #' 
-#' This function can write 9 different MAgPIE file\_types. "cs2" is the new
+#' This function can write 12 different MAgPIE file\_types. "cs2" is the new
 #' standard format for cellular data with or without header and the first
 #' columns (year,regiospatial) or only (regiospatial), "csv" is the standard
 #' format for regional data with or without header and the first columns
 #' (year,region,cellnumber) or only (region,cellnumber), "cs3" is another csv
 #' format which is specifically designed for multidimensional data for usage in
-#' GAMS.  All these variants are written without further specification.
+#' GAMS.  All these variants are written without further specification. "rds" is
+#' a R-default format for storing R objects.
 #' "magpie" (.m) and "magpie zipped" (.mz) are new formats developed to allow a
 #' less storage intensive management of MAgPIE-data. The only difference
 #' between both formats is that .mz is gzipped whereas .m is not compressed. So
@@ -25,9 +26,10 @@
 #' to file\_name and file\_folder)
 #' @param file_folder folder the file should be written to (alternatively you
 #' can also specify the full path in file\_name - wildcards are supported)
-#' @param file_type Format the data should be stored as. Currently 11 formats
-#' are available: "cs2" (cellular standard MAgPIE format), "csv" (regional
-#' standard MAgPIE format), "cs3" (Format for multidimensional MAgPIE data,
+#' @param file_type Format the data should be stored as. Currently 12 formats
+#' are available: "rds" (default R-data format), 
+#' cs2" (cellular standard MAgPIE format), "csv" (regional standard MAgPIE 
+#' format), "cs3" (Format for multidimensional MAgPIE data,
 #' compatible to GAMS), "cs4" (alternative multidimensional format compatible
 #' to GAMS, in contrast to cs3 it can also handle sparse data), "csvr", "cs2r",
 #' "cs3r" and "cs4r" which are the same formats as the previous mentioned ones
@@ -48,6 +50,8 @@
 #' @param comment.char character: a character vector of length one containing a
 #' single character or an empty string. Use "" to turn off the interpretation
 #' of comments altogether.
+#' @param metadata.char character: a character vector of length one containing a
+#' single character or an empty string. 
 #' @param mode File permissions the file should be written with as 3-digit
 #' number (e.g. "777" means full access for user, group and all, "750" means
 #' full access for user, read access for group and no acess for anybody else).
@@ -58,19 +62,22 @@
 #' compression) and 9 (most compression), the netCDF file is written in netCDF
 #' version 4 format. If set to NA, the netCDF file is written in netCDF version
 #' 3 format.
+#' @param verbose Boolean deciding about whether function should be verbose or not
+#' @param ... arguments to be passed to write.magpie.ncdf
 #' @note
 #' 
 #' The binary MAgPIE formats .m and .mz have the following content/structure
 #' (you only have to care for that if you want to implement
 #' read.magpie/write.magpie functions in other languages): \cr \cr 
-#' [ FileFormatVersion | Current file format version number (currently 2) | integer | 2 Byte ] \cr 
+#' [ FileFormatVersion | Current file format version number (currently 4) | integer | 2 Byte ] \cr 
 #' [ nchar_comment | Number of characters of the file comment | integer | 4 Byte ] \cr 
+#' [ nbyte_metadata | Number of bytes of the serialized metadata | integer | 4 Byte ] \cr 
 #' [ nchar_sets | Number of characters of all regionnames + 2 delimiter | integer | 2 Byte] \cr 
 #' [ not used | Bytes reserved for later file format improvements | integer | 92 Byte ] \cr
 #' [ nyears | Number of years | integer | 2 Byte ]\cr 
 #' [ year_list | All years of the dataset (0, if year is not present) | integer | 2*nyears Byte ] \cr 
 #' [ nregions | Number of regions | integer | 2 Byte ] \cr 
-#' [ nchar_reg | Number of characters of all regionnames + (nreg-1) for delimiters | integer | 2 Byte ] \cr 
+#' [ nchar_reg | Number of characters of all regionnames + (nreg-1) for delimiters | integer | 4 Byte ] \cr 
 #' [ regions | Regionnames saved as reg1\\nreg2 (\\n is the delimiter) | character | 1*nchar_reg Byte ] \cr 
 #' [ cpr | Cells per region | integer | 4*nreg Byte ] \cr 
 #' [ nelem | Total number of data elements | integer | 4 Byte ] \cr 
@@ -79,15 +86,16 @@
 #' [ data | Data of the MAgPIE array in vectorized form | numeric | 4*nelem Byte ] \cr 
 #' [ comment | Comment with additional information about the data | character | 1*nchar_comment Byte ] \cr 
 #' [ sets | Set names with \\n as delimiter | character | 1*nchar_sets Byte] \cr
+#' [ metadata | serialized metadata information | bytes | 1*nbyte_metadata Byte] \cr 
 #' 
 #' Please note that if your data in the spatial dimension is not ordered by
 #' region name each new appearance of a region which already appeared before
 #' will be treated and counted as a new region (e.g.
 #' AFR.1,AFR.2,CPA.3,CPA.4,AFR.5 will count AFR twice and nregions will be set
 #' to 3!).
-#' @author Jan Philipp Dietrich
+#' @author Jan Philipp Dietrich, Stephen Bi
 #' @seealso \code{"\linkS4class{magpie}"},
-#' \code{\link{read.magpie}},\code{\link{mbind}}
+#' \code{\link{read.magpie}},\code{\link{mbind}},\code{\link{write.magpie.ncdf}}
 #' @examples
 #' 
 #' # a <- read.magpie("lpj_yield_ir.csv")
@@ -95,11 +103,13 @@
 #' 
 #' @export write.magpie
 #' @importFrom utils setTxtProgressBar txtProgressBar write.csv write.table
-write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,comment=NULL,comment.char="*",mode=NULL,nc_compression=9) {
+write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,comment=NULL,comment.char="*",metadata.char="~",mode=NULL,nc_compression=9,verbose=TRUE, ...) {
+  umask <- Sys.umask()
   if(!is.null(mode)) {
-    umask <- Sys.umask()
     umask_mode <- as.character(777-as.integer(mode))
     Sys.umask(umask_mode)
+  } else {
+    mode <- as.character(777-as.integer(as.character(umask)))
   }
   if(is.null(x)) x <- as.magpie(numeric(0))
   if(is.magpie(x)) {
@@ -119,6 +129,7 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
     #look for comment/addtitional information
     if(is.null(comment) & !is.null(attr(x,"comment"))) comment <- attr(x,"comment")
     if(is.null(comment)) comment <- "" 
+    metadata <- getMetadata(x)
     
     #expand wildcards
     file_path <- paste(Sys.glob(dirname(file_path)),basename(file_path),sep="/")
@@ -132,13 +143,76 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       x <- mbind(x2,x)
     }
     
+    #function to write metadata to cs* filetypes
+    .writeMetadata <- function(file,metadata,char,mchar) {
+      if(!is.null(metadata$unit)) {
+        if (is(metadata$unit,"units")) {
+          if (as.numeric(metadata$unit)==1) {
+            unit <- as.character(units(metadata$unit))
+          }else {
+            unit <- paste(as.character(metadata$unit),as.character(units(metadata$unit)))
+          }
+        }else if (is.character(metadata$unit)) {
+          unit <- metadata$unit
+        #Mixed units handling in development  
+        #}else if (is(metadata$unit,"units")) {
+          #unit <- paste(as.character(metadata$unit),as.character(units(metadata$unit)),collapse=", ")
+        }else {
+          unit <- "unknown"
+        }
+        writeLines(paste(char,paste0(mchar,"unit:"),paste(unit,collapse=", ")),file)
+        writeLines(char,file)
+      }
+      if(!is.null(metadata$user)) {
+        writeLines(paste(char,paste0(mchar,"user:"),metadata$user),file)
+        writeLines(char,file)
+      }
+      if(!is.null(metadata$date)) {
+        writeLines(paste(char,paste0(mchar,"date:"),metadata$date),file)
+        writeLines(char,file)
+      }
+      if(!is.null(metadata$version)) {
+        writeLines(paste(char,paste0(mchar,"version:"),paste(names(metadata$version),metadata$version,collapse = "; ")),file)
+        writeLines(char,file)
+      }
+      if(!is.null(metadata$description)) {
+        writeLines(paste(char,paste0(mchar,"description:"),metadata$description[1]),file)
+        if (length(metadata$description)>1)  writeLines(paste(char,"\t",paste(metadata$description[-1],collapse="\n\t")),file)
+        writeLines(char,file)
+      }
+      if(!is.null(metadata$note)) {
+        writeLines(paste(char,paste0(mchar,"note:"),metadata$note[1]),file)
+        if (length(metadata$note)>1)  writeLines(paste(char,"\t",paste(metadata$note[-1])),file)
+        writeLines(char,file)
+      }
+      if(!is.null(metadata$source)) {
+        writeLines(paste0(char," ",mchar,"source:"),file)
+        if(is.list(metadata$source)) {
+          for(i in 1:length(metadata$source)) {
+            if(is(metadata$source[[i]],"bibentry"))  writeLines(paste(char,toBibtex(metadata$source[[i]])),file)
+            else if(is(metadata$source[[i]],"Bibtex"))  writeLines(paste(char,metadata$source[[i]]),file)
+          }
+        }else {
+          if(is(metadata$source,"bibentry"))  writeLines(paste(char,toBibtex(metadata$source)),file)
+          else if(is(metadata$source,"Bibtex"))  writeLines(paste(char,metadata$source),file)
+        }
+        writeLines(char,file)
+      }
+      if(is(metadata$calcHistory,"Node")) {
+        calcHistory <- as.character(as.data.frame(metadata$calcHistory)[[1]])
+        writeLines(paste0(char," ",mchar,"calcHistory:"),file)
+        writeLines(paste(char,calcHistory),file,useBytes=TRUE)
+        writeLines(char,file)
+      }
+    }
+    
     if(file_type=="m" | file_type=="mz") {
-      fformat_version <- "2"  #File format version 1 (older data has version 0)
+      fformat_version <- "4"  #File format version (oldest data has version 0)
       comment <- paste(comment,collapse="\n")
       ncells <- dim(x)[1]
       nyears <- dim(x)[2]
       ndata  <- dim(x)[3]    
-      rle <- rle(gsub("\\..*$","",dimnames(x)[[1]]))
+      rle <- rle(gsub("\\.[0-9]*$","",dimnames(x)[[1]]))
       regions <- rle$values
       cpr <- rle$lengths
       nregions <- length(regions)
@@ -146,6 +220,7 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       datanames <- dimnames(x)[[3]]
       datanames_collapsed <- paste(datanames,collapse='\n')    
       sets_collapsed <- paste(getSets(x,fulldim = FALSE), collapse = '\n')
+      metadata <- serialize(metadata,NULL,FALSE)
       
       if(years) {
         year_list <- as.integer(substr(dimnames(x)[[2]],2,5))
@@ -161,16 +236,20 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       
       writeBin(as.integer(fformat_version),zz,size=2)
       writeBin(as.integer(nchar(comment)),zz,size=4)
+      writeBin(as.integer(length(metadata)),zz,size=4)
       writeBin(as.integer(nchar(sets_collapsed)),zz,size=2)
       writeBin(as.integer(rep(0,92)),zz,size=1) #92 Byte reserved for later file format improvements
-      writeBin(as.integer(c(nyears,year_list,nregions,nchar(regions_collapsed))),zz,size=2)
+      writeBin(as.integer(c(nyears,year_list,nregions)),zz,size=2)
+      writeBin(as.integer(nchar(regions_collapsed)),zz,size=4)
       writeChar(regions_collapsed,zz,eos=NULL)
       writeBin(as.integer(c(cpr,ndata*ncells*nyears,nchar(datanames_collapsed))),zz,size=4)
       if(datanames_collapsed!="") writeChar(datanames_collapsed,zz,eos=NULL)
       writeBin(as.numeric(as.vector(x)),zz,size=4)
       if(comment!="") writeChar(comment,zz,eos=NULL)
       if(nchar(sets_collapsed)>0) writeChar(sets_collapsed,zz,eos=NULL)
-      close(zz)     
+      if(!is.null(metadata)) writeBin(metadata,zz)
+      close(zz)    
+      Sys.chmod(file_path, mode)
     } else if(file_type=="asc") {
       coord <- magclassdata$half_deg[,c("lon","lat")]
       if(dim(coord)[1]!=dim(x)[1]) stop("Wrong format! Only 0.5deg data can be written as ascii grid!")
@@ -184,55 +263,15 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
           sp::write.asciigrid(grid,tmp2_file)          
         }
       }
+    } else if(file_type=="rds") {
+      saveRDS(object=x, file=file_path, ...)
     } else if(file_type=="nc") {
-      if (is.null(getNames(x)) | is.null(getYears(x))) stop("Year and Data name are necessary for saving to NetCDF format")
-      mag <- as.array(x)
-      
-      #coord from magclass data
-      coord <- magclassdata$half_deg[,c("lon","lat")]
-
-      # netcdf generation ####
-      NODATA <- NA
-      
-      # 4D array: lon, lat, time, data
-      lon <- seq(-179.75,179.75,by=0.5)
-      lat <- seq(-89.75,89.75,by=0.5)
-      time <- as.numeric(unlist(lapply(strsplit(dimnames(mag)[[2]],"y"),function(mag) mag[2])))
-      data <- dimnames(mag)[[3]]
-
-      #Convert magpie data to array; coord is used for mapping cells in mag to coordinates in netcdf
-      cat("Converting MAgPIE Data to 720 x 360 array")
-      netcdf <- array(NODATA,dim=c(720,360,dim(mag)[2],dim(mag)[3]),dimnames=list(lon,lat,time,data))
-      pb <- txtProgressBar(min = 0, max = dim(mag)[1], style = 3)
-      for (i in 1:ncells(mag)) {
-        netcdf[which(coord[i, 1]==lon), which(coord[i,2]==lat),,] <- mag[i,,,drop=FALSE]
-        setTxtProgressBar(pb, i)
-      }
-      close(pb)
-      
-      # NC file dimensions
-      dim_lon <- ncdf4::ncdim_def("lon","degrees_east",lon)
-      dim_lat <- ncdf4::ncdim_def("lat","degrees_north",lat)
-      dim_time <- ncdf4::ncdim_def("time","years",time,calendar = "standard")
-      
-      #Define variables
-      ncv <- list()
-      for (i in dimnames(netcdf)[[4]]) ncv[[i]] <- ncdf4::ncvar_def(i, comment, list(dim_lon,dim_lat,dim_time), NODATA, prec="double",compression=nc_compression)
-      
-      #Create file
-      if (file.exists(file_path)) file.remove(file_path)
-      ncf <- ncdf4::nc_create(file_path, ncv)
-      
-      #Put data into file
-      cat("Saving to NetCDF format")
-      pb <- txtProgressBar(min = 0, max = dim(netcdf)[4], style = 3)
-      for (i in dimnames(netcdf)[[4]]) {
-        ncdf4::ncvar_put(ncf, ncv[[i]], netcdf[,,,i])
-        setTxtProgressBar(pb, which(dimnames(netcdf)[[4]] == i))
-      }
-      close(pb)
-      ncdf4::nc_close(ncf)
-      } else if(file_type=="cs3" | file_type=="cs3r") {
+      write.magpie.ncdf(x=x,
+                        file=file_path,
+                        nc_compression = nc_compression,
+                        comment=comment,
+                        verbose=verbose, ...)  
+    } else if(file_type=="cs3" | file_type=="cs3r") {
       if(file_type=="cs3r") dimnames(x)[[2]] <- sub("y","",dimnames(x)[[2]])
       if(dim(x)[3]!=prod(fulldim(x)[[1]][-1:-2])) stop("Input data seems to be sparse but ",file_type," does not support sparse data. Please use ",sub("3","4",file_type)," instead!")
       x <- unwrap(x)
@@ -259,9 +298,11 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       x <- cbind(dimnames(x)[[1]],x)
       dimnames(x)[[2]] <- c(gsub("[^,]*(,|$)","dummy\\1",x[1,1]),header)
       zz <- file(file_path,open="w")
-      if(any(comment!="")) writeLines(paste(comment.char,comment,sep=""),zz)
+      if(any(comment!=""))  writeLines(paste(comment.char,comment,sep=""),zz)
+      if(!is.null(metadata))  .writeMetadata(zz,metadata,comment.char,metadata.char)
       write.csv(x,file=zz,quote=FALSE,row.names=FALSE)
       close(zz)
+      Sys.chmod(file_path, mode)
     } else if(file_type=="cs4" | file_type=="cs4r") {
       print_cells <- nregions(x)<ncells(x)
       print_regions <- getRegions(x)[1]!="GLO"
@@ -280,8 +321,10 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       }
       zz <- file(file_path,open="w")
       if(any(comment!="")) writeLines(paste(comment.char,comment,sep=""),zz)
+      if(!is.null(metadata))  .writeMetadata(zz,metadata,comment.char,metadata.char)
       write.table(output,file=zz,quote=FALSE,row.names=FALSE,col.names=FALSE,sep=",")
       close(zz)
+      Sys.chmod(file_path, mode)
       
     } else {
       print_cells <- nregions(x)<ncells(x)
@@ -319,8 +362,10 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
         if(header & print_regions) dimnames(output)[[2]][1] <- "dummy"
         zz <- file(file_path,open="w")
         if(any(comment!="")) writeLines(paste(comment.char,comment,sep=""),zz)
+        if(!is.null(metadata))  .writeMetadata(zz,metadata,comment.char,metadata.char)
         write.table(output,zz,sep=",",col.names=header,row.names=FALSE,quote=FALSE)  
         close(zz)
+        Sys.chmod(file_path, mode)
       } else {      
         if(file_type=="csvr" | file_type=="cs2r") dimnames(x)[[2]] <- sub("y","",dimnames(x)[[2]])
         if(file_type=="cs2" | file_type=="cs2r") print_regions <- FALSE
@@ -346,9 +391,11 @@ write.magpie <- function(x,file_name,file_folder="",file_type=NULL,append=FALSE,
       	  header <- FALSE
       	}
         zz <- file(file_path,open="w")
-        if(any(comment!="")) writeLines(paste(comment.char,comment,sep=""),zz)
+        if(any(comment!="")) writeLines(paste0(comment.char,comment,sep=""),zz)
+        if(!is.null(metadata))  .writeMetadata(zz,metadata,comment.char,metadata.char)
         write.table(output,zz,sep=",",col.names=header,row.names=FALSE,quote=FALSE)
         close(zz)
+        Sys.chmod(file_path, mode)
       }
     }
   } else {

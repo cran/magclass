@@ -79,6 +79,7 @@ calibrate_it<-function(origin, cal_to, cal_type="convergence", cal_year=NULL, en
       print(cal_origin[,,]*cal_to[,,])
     }   
   } else {stop("unknown cal_type")}
+  calibrated <- updateMetadata(calibrated, origin, unit="copy", source="copy", calcHistory="copy", description="copy")
   return(calibrated)
 }
 

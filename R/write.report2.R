@@ -38,10 +38,11 @@ write.report2 <- function(x,file=NULL,model=NULL,scenario=NULL,unit=NULL,ndigit=
     if(is.list(x[[1]])) {
       for(scenario in names(x)){
         for(model in names(x[[scenario]])) {
-          write.report2(x[[scenario]][[model]],file=file,model=model,scenario=scenario,unit=unit,ndigit=ndigit,append=append)  
+          x[[scenario]][[model]] <- write.report2(x[[scenario]][[model]],file=file,model=model,scenario=scenario,unit=unit,ndigit=ndigit,append=append, skipempty=skipempty, extracols=extracols)  
           append <- TRUE
         }
-      }  
+      } 
+      if(is.null(file)) return(x)
     } else {
       stop("Wrong format. x must be either a list of lists or a MAgPIE object! Only single list found!")
     }
@@ -116,8 +117,8 @@ prepare_data <- function(x, model=NULL, scenario=NULL, unit=NULL, skipempty=FALS
   unitsplit <- function(x,col) {
     w <- grepl("\\(.*\\)",x[[col]])
     x[[col]][!w] <- paste0(x[[col]][!w]," (N/A)")
-    tmp <- data.frame(sub("^([^\\(]*) \\((.*)\\)$","\\1",x[[col]]),
-                      sub("^([^\\(]*) \\((.*)\\)$","\\2",x[[col]]))
+    tmp <- data.frame(sub(" \\(([^\\(]*)\\)($|\\.)","",x[[col]]),
+                      sub("\\)$","",sub(".* \\(","",x[[col]])))
     names(tmp) <- c(names(x)[col],"unit")
     x <- cbind(tmp,x[setdiff(1:ncol(x),col)])
     return(x) 

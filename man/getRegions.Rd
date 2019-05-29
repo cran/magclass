@@ -3,7 +3,6 @@
 \name{getRegions}
 \alias{getRegions}
 \alias{getRegions<-}
-\alias{getRegions<-}
 \title{Get regions}
 \usage{
 getRegions(x)

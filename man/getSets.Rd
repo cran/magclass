@@ -3,7 +3,6 @@
 \name{getSets}
 \alias{getSets}
 \alias{getSets<-}
-\alias{getSets<-}
 \title{Get sets}
 \usage{
 getSets(x, fulldim = TRUE, sep = ".")

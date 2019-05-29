@@ -4,7 +4,7 @@
 \alias{dimCode}
 \title{dimCode}
 \usage{
-dimCode(dim, x, missing = 0)
+dimCode(dim, x, missing = 0, sep = ".")
 }
 \arguments{
 \item{dim}{A vector of dimension numbers or dimension names which should be
@@ -15,6 +15,8 @@ translated}
 \item{missing}{Either a value to which a dimension should be set in case
 that it is not found (default is 0), or "stop" indicating that the function
 should throw an error in these cases.}
+
+\item{sep}{A character separating joined dimension names}
 }
 \value{
 A dimension code identifying the dimension. Either a integer which
@@ -36,5 +38,5 @@ dimCode(c("t","scenario","blablub"),population_magpie)
 \code{\link{mselect}}, \code{\link{getDim}}
 }
 \author{
-Jan Philipp Dietrich
+Jan Philipp Dietrich, Kristine Karstens
 }

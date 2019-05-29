@@ -3,7 +3,6 @@
 \name{mselect}
 \alias{mselect}
 \alias{mselect<-}
-\alias{mselect<-}
 \title{MSelect}
 \usage{
 mselect(x, ..., collapseNames = FALSE)

@@ -14,10 +14,9 @@ tmpfilter <- function(x, sep="\\.", replacement="_") {
   return(x)
 }
 
-
 setMethod("as.magpie",
           signature(x = "lpj"),
-          function (x, ...)
+          function (x, unit="unknown", ...)
           {
             xdimnames <- dimnames(x)
             xdim <- dim(x)
@@ -25,13 +24,14 @@ setMethod("as.magpie",
             dimnames(x) <- list(paste(magclassdata$half_deg$region,1:59199,sep='.'),
                                 xdimnames[[2]],
                                 paste(rep(xdimnames[[3]],xdim[4]),rep(xdimnames[[4]],each=xdim[3]),sep="."))
-            return(new("magpie",x))
+            out <- new("magpie",x)
+            return(updateMetadata(out,unit=unit))
           }
 )
 
 setMethod("as.magpie",
     signature(x = "array"),
-    function (x, spatial=NULL, temporal=NULL, ...)
+    function (x, spatial=NULL, temporal=NULL, unit="unknown", ...)
     {
       store_attributes <- copy.attributes(x,0)
 
@@ -96,7 +96,7 @@ setMethod("as.magpie",
         for(i in d$regiospatial) {
           ntmp <- names(dimnames(x))[1]
           if(!is.null(ntmp)) if(!is.na(ntmp)) if(names(dimnames(x))[1] == "j") names(dimnames(x))[1] <- "i.j"
-          dimnames(x)[[i]] <- sub("_","\\.",dimnames(x)[[i]])
+          #dimnames(x)[[i]] <- sub("_","\\.",dimnames(x)[[i]])
         }
       }
 
@@ -149,15 +149,17 @@ setMethod("as.magpie",
 
       #Now temporal and regiospatial dimension should both exist
       #Return MAgPIE object
-      return(copy.attributes(store_attributes,new("magpie",wrap(x,list(d$regiospatial,d$temporal,NA)))))
+      out <- copy.attributes(store_attributes,new("magpie",wrap(x,list(d$regiospatial,d$temporal,NA))))
+      return(updateMetadata(out, unit=unit))
     }
 )
 
 setMethod("as.magpie",
     signature(x = "numeric"),
-    function(x,...)
+    function(x, unit="unknown", ...)
     {
-      return(copy.attributes(x,as.magpie(as.array(x),...)))
+      out <- copy.attributes(x,as.magpie(as.array(x),...))
+      return(updateMetadata(out, unit=unit))
     }
 )
 
@@ -171,7 +173,7 @@ setMethod("as.magpie",
 
 setMethod("as.magpie",
           signature(x = "data.frame"),
-          function (x, datacol=NULL, tidy=FALSE, sep=".", replacement="_", ...)
+          function (x, datacol=NULL, tidy=FALSE, sep=".", replacement="_", unit="unknown", ...)
           {
             # filter illegal characters
             for(i in 1:dim(x)[2]) {
@@ -182,7 +184,7 @@ setMethod("as.magpie",
             if(dim(x)[1]==0) return(copy.attributes(x,new.magpie(NULL)))
             if(is.null(datacol)) {
               for(i in dim(x)[2]:1) {
-                if(all(!is.na(suppressWarnings(as.numeric(x[,i])))) & !is.temporal(x[,i])) {
+                if(all(!is.na(suppressWarnings(as.numeric(x[,i])))) & !is.temporal(x[,i]) & !is.factor(x[,i])) {
                   datacol <- i
                 } else {
                   break
@@ -194,7 +196,8 @@ setMethod("as.magpie",
               if(datacol==dim(x)[2]) return(tidy2magpie(x,...))
               x[[datacol-1]] <- as.factor(x[[datacol-1]])
             }
-            return(copy.attributes(x,tidy2magpie(suppressMessages(reshape2::melt(x)),...)))
+            out <- copy.attributes(x,tidy2magpie(suppressMessages(reshape2::melt(x)),...))
+            return(updateMetadata(out, unit=unit))
           }
 )
 
@@ -263,19 +266,23 @@ setMethod("as.magpie",
 
             #put value column as last column
             x <- x[c(which(names(x)!="value"),which(names(x)=="value"))]
-            return(tidy2magpie(x,spatial="region",temporal="period"))
+            out <- tidy2magpie(x,spatial="region",temporal="period")
+            return(updateMetadata(out))
           }
 )
 
 setMethod("as.magpie",
           signature(x = "tbl_df"),
-          function(x, ...)
+          function(x, unit="unknown", ...)
           {
             if("quitte" %in% class(x)) {
               class(x) <- c("quitte","data.frame")
+              out <- as.magpie(x,...)
+              return(updateMetadata(out))
             } else {
               class(x) <- "data.frame"
+              out <- as.magpie(x,...)
+              return(updateMetadata(out, unit=unit))
             }
-            return(as.magpie(x,...))
           }
 )

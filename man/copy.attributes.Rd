@@ -3,11 +3,10 @@
 \name{copy.attributes}
 \alias{copy.attributes}
 \alias{copy.attributes<-}
-\alias{copy.attributes<-}
 \title{Copy Attributes}
 \usage{
-copy.attributes(from, to, delete = c("names", "row.names", "class", "dim",
-  "dimnames"), delete2 = NULL)
+copy.attributes(from, to, delete = c("names", "row.names", "class",
+  "dim", "dimnames"), delete2 = NULL)
 
 copy.attributes(to, delete = c("names", "row.names", "class", "dim",
   "dimnames"), delete2 = NULL) <- value

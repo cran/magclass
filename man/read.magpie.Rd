@@ -17,7 +17,8 @@ to file\_name and file\_folder)}
 specify the full path in file\_name - wildcards are supported)}
 
 \item{file_type}{format the data is stored in. Currently 12 formats are
-available: "cs2" (cellular standard MAgPIE format), "csv" (regional standard
+available: "rds" (recommended compressed format), 
+"cs2" (cellular standard MAgPIE format), "csv" (regional standard
 MAgPIE format), "cs3" (multidimensional format compatible to GAMS), "cs4"
 (alternative multidimensional format compatible to GAMS, in contrast to cs3
 it can also handle sparse data), "csvr", "cs2r", "cs3r" and "cs4r" which are
@@ -54,12 +55,13 @@ Reads a MAgPIE-file and converts it to a 3D array of the structure
 (cells,years,datacolumn)
 }
 \details{
-This function reads from 10 different MAgPIE file\_types. "cs2" is the new
-standard format for cellular data with or without header and the first
-columns (year,regiospatial) or only (regiospatial), "csv" is the standard
-format for regional data with or without header and the first columns
-(year,region,cellnumber) or only (region,cellnumber). "cs3" is a format
-similar to csv and cs2, but with the difference that it supports
+This function reads from 12 different MAgPIE file\_types. "rds" is
+a R-default format for storing R objects."cs2" is the new standard 
+format for cellular data with or without 
+header and the first columns (year,regiospatial) or only (regiospatial), 
+"csv" is the standard format for regional data with or without header 
+and the first columns (year,region,cellnumber) or only (region,cellnumber). 
+"cs3" is a format similar to csv and cs2, but with the difference that it supports
 multidimensional data in a format which can be read by GAMS, "put" is a
 newly supported format which is mosty used for the REMIND-MAgPIE coupling.
 This format is only partly supported at the moment.  "asc" is the AsciiGrid
@@ -76,14 +78,15 @@ have a higher compatibility to other languages. \cr\cr Since library version
 The binary MAgPIE formats .m and .mz have the following content/structure
 (you only have to care for that if you want to implement
 read.magpie/write.magpie functions in other languages): \cr \cr 
-[ FileFormatVersion | Current file format version number (currently 2) | integer | 2 Byte ] \cr 
+[ FileFormatVersion | Current file format version number (currently 4) | integer | 2 Byte ] \cr 
 [ nchar_comment | Number of characters of the file comment | integer | 4 Byte ] \cr 
+[ nbyte_metadata | Number of bytes of the serialized metadata | integer | 4 Byte ] \cr 
 [ nchar_sets | Number of characters of all regionnames + 2 delimiter | integer | 2 Byte] \cr 
 [ not used | Bytes reserved for later file format improvements | integer | 92 Byte ] \cr
 [ nyears | Number of years | integer | 2 Byte ]\cr 
 [ year_list | All years of the dataset (0, if year is not present) | integer | 2*nyears Byte ] \cr 
 [ nregions | Number of regions | integer | 2 Byte ] \cr 
-[ nchar_reg | Number of characters of all regionnames + (nreg-1) for delimiters | integer | 2 Byte ] \cr 
+[ nchar_reg | Number of characters of all regionnames + (nreg-1) for delimiters | integer | 4 Byte ] \cr 
 [ regions | Regionnames saved as reg1\\nreg2 (\\n is the delimiter) | character | 1*nchar_reg Byte ] \cr 
 [ cpr | Cells per region | integer | 4*nreg Byte ] \cr 
 [ nelem | Total number of data elements | integer | 4 Byte ] \cr 
@@ -92,6 +95,7 @@ read.magpie/write.magpie functions in other languages): \cr \cr
 [ data | Data of the MAgPIE array in vectorized form | numeric | 4*nelem Byte ] \cr 
 [ comment | Comment with additional information about the data | character | 1*nchar_comment Byte ] \cr 
 [ sets | Set names with \\n as delimiter | character | 1*nchar_sets Byte] \cr
+[ metadata | serialized metadata information | bytes | 1*nbyte_metadata Byte] \cr 
 
 Please note that if your data in the spatial dimension is not ordered by
 region name each new appearance of a region which already appeared before
@@ -111,5 +115,5 @@ write.magpie(a,"lpj_yield_ir.mz")
 \code{"\linkS4class{magpie}"}, \code{\link{write.magpie}}
 }
 \author{
-Jan Philipp Dietrich
+Jan Philipp Dietrich, Stephen Bi, Florian Humpenoeder
 }

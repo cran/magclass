@@ -26,6 +26,9 @@ read.report <- function(file,as.list=TRUE) {
   .trim <- function(a) return(gsub("(^ +)|( +$)", "",as.character(a)))
   
   .return_magpie <- function(tmp,scenario,model) {
+    
+    #replace weird ° in tables 
+    tmp$Unit      <- sub(pattern="\xb0C",replacement = "K", x = tmp$Unit, useBytes = TRUE)
     regions <- unique(as.character(tmp$Region))
     names(regions) <- regions
     years <- sub("X","y",grep("^X[0-9]{4}$",dimnames(tmp)[[2]],value=TRUE))
@@ -36,6 +39,9 @@ read.report <- function(file,as.list=TRUE) {
     #delete dots if they are aparrently not used as dimension separator
     ndots <- nchar(gsub("[^\\.]*","",names))
     if(any(ndots!=ndots[1])) names <- gsub("\\.","",names)
+    #replace weird ° in tables after sub function evaluation 
+    names        <- sub(pattern="\U3e30623cC",replacement = "K", x = names, useBytes = TRUE)
+    names(names) <- sub(pattern="\U3e30623cC",replacement = "K", x = names(names), useBytes = TRUE)
     mag <- new.magpie(sub("ZZZZZZGLO","GLO",(sort(sub("GLO","ZZZZZZGLO",regions)))),years,names)
     yearelems <- grep("^X[0-9]{4}$",dimnames(tmp)[[2]])
     regions[order(sub("GLO","ZZZZZZGLO",regions))] <- dimnames(mag)[[1]]
@@ -48,7 +54,9 @@ read.report <- function(file,as.list=TRUE) {
 
     mag[coord] <- suppressWarnings(as.numeric(as.vector(as.matrix(tmp[,yearelems]))))
     names(dimnames(mag)) <- c("region","year","variable")
-return(as.magpie(mag,spatial=1,temporal=2))  
+    mag <- as.magpie(mag,spatial=1,temporal=2)
+    if (withMetadata())  getMetadata(mag,"unit") <- install_magpie_units(units)
+return(mag)  
   }
 
   .readmif <- function(file) {

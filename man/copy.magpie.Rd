@@ -4,12 +4,15 @@
 \alias{copy.magpie}
 \title{Copy MAgPIE-files}
 \usage{
-copy.magpie(input_file, output_file)
+copy.magpie(input_file, output_file, round = NULL)
 }
 \arguments{
 \item{input_file}{file, that should be copied}
 
 \item{output_file}{copy destination}
+
+\item{round}{number of digits the values should be rounded, if (AND ONLY IF) file 
+format is changed. NULL means no rounding}
 }
 \description{
 This function copies MAgPIE-files from one location to another. During the

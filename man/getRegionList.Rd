@@ -3,7 +3,6 @@
 \name{getRegionList}
 \alias{getRegionList}
 \alias{getRegionList<-}
-\alias{getRegionList<-}
 \title{Get a list of celluare region-belongings}
 \usage{
 getRegionList(x)

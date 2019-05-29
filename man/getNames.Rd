@@ -3,7 +3,6 @@
 \name{getNames}
 \alias{getNames}
 \alias{getNames<-}
-\alias{getNames<-}
 \title{Get dataset names}
 \usage{
 getNames(x, fulldim = FALSE, dim = NULL)

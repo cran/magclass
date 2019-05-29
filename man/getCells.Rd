@@ -4,8 +4,6 @@
 \alias{getCells}
 \alias{getCells<-}
 \alias{setCells}
-\alias{getCells<-}
-\alias{setCells}
 \title{Get Cells}
 \usage{
 getCells(x)

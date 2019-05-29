@@ -61,7 +61,17 @@ write.report <- function(x,file=NULL,model="MAgPIE",scenario="default",unit=NA,n
       }
     }
 
+    if (is.na(unit) & withMetadata()) {
+      unit <- units(x)
+    }
     unitdef<-unit
+    if (is(unit,"units")) {
+      if (as.numeric(unit)!=1) {
+        unit <- paste(as.character(unit),as.character(units(unit)))
+      }else {
+        unit <- as.character(units(unit))
+      }
+    }
     ii<-1
     for (mod in model) {
       for (scen in scenario) {
@@ -89,8 +99,8 @@ write.report <- function(x,file=NULL,model="MAgPIE",scenario="default",unit=NA,n
           nelem_with_brackets <- length(grep("\\(*\\)$",getNames(xtemp)))
           if(nelem_with_brackets==dim(xtemp)[3]) {
             tmp <- getNames(xtemp)
-            dimnames(xtemp)[[3]] <- sub(" ?\\(.*\\)$","", tmp)
-            unit <- sub("^[^\\(]*\\((.*)\\)$", "\\1",tmp)
+            dimnames(xtemp)[[3]] <- sub(" \\(([^\\(]*)\\)($|\\.)","",tmp)
+            unit <- sub("\\)$","",sub(".* \\(","",tmp))
           } else {
             if(nelem_with_brackets > 0) warning("Some but not all variable entries provide information in brackets which might be a unit information. To have it detected as unit all entries must provide this information!")
             unit <- rep(unit,ndata)

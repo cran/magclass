@@ -19,6 +19,8 @@
 \alias{[<-,magpie,ANY,ANY-method}
 \alias{[<-,magpie-method}
 \alias{Ops,magpie,magpie-method}
+\alias{Ops,magpie,numeric-method}
+\alias{Ops,numeric,magpie-method}
 \title{Class "magpie" ~~~}
 \arguments{
 \item{x}{An object that should be either tested or transformed as/to an

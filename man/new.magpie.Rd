@@ -5,7 +5,7 @@
 \title{new.magpie}
 \usage{
 new.magpie(cells_and_regions = "GLO", years = NULL, names = NULL,
-  fill = NA, sort = FALSE, sets = NULL)
+  fill = NA, sort = FALSE, sets = NULL, unit = "unknown")
 }
 \arguments{
 \item{cells_and_regions}{Either the region names (e.g. "AFR"), or the cells
@@ -24,6 +24,8 @@ further specified}
 
 \item{sets}{A vector of dimension names. See \code{\link{getSets}} for more
 information.}
+
+\item{unit}{A character which sets the MAgPIE object's unit field in its metadata atrribute}
 }
 \value{
 an empty magpie object filled with fill, with the given dimnames
