@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="Jan Philipp Dietrich" />
 
-<meta name="date" content="2019-05-28" />
+<meta name="date" content="2019-12-06" />
 
 <title>MAGPIE Class Tutorial</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -95,7 +95,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">MAGPIE Class Tutorial</h1>
 <h4 class="author">Jan Philipp Dietrich</h4>
-<h4 class="date">2019-05-28</h4>
+<h4 class="date">2019-12-06</h4>
 
 
 
@@ -205,8 +205,8 @@ pm &lt;-<span class="st"> </span>population_magpie</code></pre></div>
 <span class="co">#&gt; [1] 10</span></code></pre></div>
 <p>Which years and how many?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">getYears</span>(pm)
-<span class="co">#&gt;  [1] &quot;y1995&quot; &quot;y2005&quot; &quot;y2015&quot; &quot;y2025&quot; &quot;y2035&quot; &quot;y2045&quot; &quot;y2055&quot; &quot;y2065&quot;</span>
-<span class="co">#&gt;  [9] &quot;y2075&quot; &quot;y2085&quot; &quot;y2095&quot; &quot;y2105&quot; &quot;y2115&quot; &quot;y2125&quot; &quot;y2135&quot; &quot;y2145&quot;</span>
+<span class="co">#&gt;  [1] &quot;y1995&quot; &quot;y2005&quot; &quot;y2015&quot; &quot;y2025&quot; &quot;y2035&quot; &quot;y2045&quot; &quot;y2055&quot; &quot;y2065&quot; &quot;y2075&quot;</span>
+<span class="co">#&gt; [10] &quot;y2085&quot; &quot;y2095&quot; &quot;y2105&quot; &quot;y2115&quot; &quot;y2125&quot; &quot;y2135&quot; &quot;y2145&quot;</span>
 <span class="kw">nyears</span>(pm)
 <span class="co">#&gt; [1] 16</span></code></pre></div>
 <p>Which data elements?</p>
@@ -235,8 +235,8 @@ pm &lt;-<span class="st"> </span>population_magpie</code></pre></div>
 <span class="co">#&gt;  [1] &quot;AFR&quot; &quot;CPA&quot; &quot;EUR&quot; &quot;FSU&quot; &quot;LAM&quot; &quot;MEA&quot; &quot;NAM&quot; &quot;PAO&quot; &quot;PAS&quot; &quot;SAS&quot;</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[2]]$t</span>
-<span class="co">#&gt;  [1] &quot;y1995&quot; &quot;y2005&quot; &quot;y2015&quot; &quot;y2025&quot; &quot;y2035&quot; &quot;y2045&quot; &quot;y2055&quot; &quot;y2065&quot;</span>
-<span class="co">#&gt;  [9] &quot;y2075&quot; &quot;y2085&quot; &quot;y2095&quot; &quot;y2105&quot; &quot;y2115&quot; &quot;y2125&quot; &quot;y2135&quot; &quot;y2145&quot;</span>
+<span class="co">#&gt;  [1] &quot;y1995&quot; &quot;y2005&quot; &quot;y2015&quot; &quot;y2025&quot; &quot;y2035&quot; &quot;y2045&quot; &quot;y2055&quot; &quot;y2065&quot; &quot;y2075&quot;</span>
+<span class="co">#&gt; [10] &quot;y2085&quot; &quot;y2095&quot; &quot;y2105&quot; &quot;y2115&quot; &quot;y2125&quot; &quot;y2135&quot; &quot;y2145&quot;</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[2]]$scenario</span>
 <span class="co">#&gt; [1] &quot;A2&quot; &quot;B1&quot;</span></code></pre></div>
@@ -246,8 +246,8 @@ pm &lt;-<span class="st"> </span>population_magpie</code></pre></div>
 <span class="co">#&gt;  [1] &quot;AFR&quot; &quot;CPA&quot; &quot;EUR&quot; &quot;FSU&quot; &quot;LAM&quot; &quot;MEA&quot; &quot;NAM&quot; &quot;PAO&quot; &quot;PAS&quot; &quot;SAS&quot;</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $t</span>
-<span class="co">#&gt;  [1] &quot;y1995&quot; &quot;y2005&quot; &quot;y2015&quot; &quot;y2025&quot; &quot;y2035&quot; &quot;y2045&quot; &quot;y2055&quot; &quot;y2065&quot;</span>
-<span class="co">#&gt;  [9] &quot;y2075&quot; &quot;y2085&quot; &quot;y2095&quot; &quot;y2105&quot; &quot;y2115&quot; &quot;y2125&quot; &quot;y2135&quot; &quot;y2145&quot;</span>
+<span class="co">#&gt;  [1] &quot;y1995&quot; &quot;y2005&quot; &quot;y2015&quot; &quot;y2025&quot; &quot;y2035&quot; &quot;y2045&quot; &quot;y2055&quot; &quot;y2065&quot; &quot;y2075&quot;</span>
+<span class="co">#&gt; [10] &quot;y2085&quot; &quot;y2095&quot; &quot;y2105&quot; &quot;y2115&quot; &quot;y2125&quot; &quot;y2135&quot; &quot;y2145&quot;</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $scenario</span>
 <span class="co">#&gt; [1] &quot;A2&quot; &quot;B1&quot;</span></code></pre></div>
@@ -283,37 +283,37 @@ pm &lt;-<span class="st"> </span>population_magpie</code></pre></div>
 <span class="co">#&gt; , , scenario = A2</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i         y1995   y2005   y2015   y2025   y2035   y2045   y2055   y2065</span>
-<span class="co">#&gt;   PAS  383.2277  534.73  604.94  668.49  723.13  767.30  798.68  819.21</span>
-<span class="co">#&gt;   SAS 1269.9243 1505.02 1796.76 2095.48 2369.60 2600.68 2783.75 2920.70</span>
+<span class="co">#&gt; i         y1995   y2005   y2015   y2025   y2035   y2045   y2055   y2065   y2075</span>
+<span class="co">#&gt;   PAS  383.2277  534.73  604.94  668.49  723.13  767.30  798.68  819.21  834.31</span>
+<span class="co">#&gt;   SAS 1269.9243 1505.02 1796.76 2095.48 2369.60 2600.68 2783.75 2920.70 3006.60</span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i       y2075   y2085   y2095   y2105   y2115   y2125   y2135   y2145</span>
-<span class="co">#&gt;   PAS  834.31  844.38  843.52  839.53  839.53  839.53  839.53  839.53</span>
-<span class="co">#&gt;   SAS 3006.60 3040.10 3007.86 2972.39 2972.39 2972.39 2972.39 2972.39</span>
+<span class="co">#&gt; i       y2085   y2095   y2105   y2115   y2125   y2135   y2145</span>
+<span class="co">#&gt;   PAS  844.38  843.52  839.53  839.53  839.53  839.53  839.53</span>
+<span class="co">#&gt;   SAS 3040.10 3007.86 2972.39 2972.39 2972.39 2972.39 2972.39</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; , , scenario = B1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i         y1995   y2005   y2015   y2025   y2035   y2045   y2055   y2065</span>
-<span class="co">#&gt;   PAS  383.2277  530.67  590.42  639.68  674.98  692.45  689.79  668.98</span>
-<span class="co">#&gt;   SAS 1269.9243 1475.64 1687.80 1870.96 1999.15 2072.68 2090.96 2049.18</span>
+<span class="co">#&gt; i         y1995   y2005   y2015   y2025   y2035   y2045   y2055   y2065   y2075</span>
+<span class="co">#&gt;   PAS  383.2277  530.67  590.42  639.68  674.98  692.45  689.79  668.98  634.64</span>
+<span class="co">#&gt;   SAS 1269.9243 1475.64 1687.80 1870.96 1999.15 2072.68 2090.96 2049.18 1953.77</span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i       y2075   y2085   y2095   y2105   y2115   y2125   y2135   y2145</span>
-<span class="co">#&gt;   PAS  634.64  590.05  536.24  507.06  507.06  507.06  507.06  507.06</span>
-<span class="co">#&gt;   SAS 1953.77 1811.83 1629.07 1528.15 1528.15 1528.15 1528.15 1528.15</span></code></pre></div>
+<span class="co">#&gt; i       y2085   y2095   y2105   y2115   y2125   y2135   y2145</span>
+<span class="co">#&gt;   PAS  590.05  536.24  507.06  507.06  507.06  507.06  507.06</span>
+<span class="co">#&gt;   SAS 1811.83 1629.07 1528.15 1528.15 1528.15 1528.15 1528.15</span></code></pre></div>
 <p>If you want to specifically select from one dimension from which you have the dimension name:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mselect</span>(pm, <span class="dt">scenario=</span><span class="st">&quot;B1&quot;</span>, <span class="dt">i=</span><span class="kw">c</span>(<span class="st">&quot;FSU&quot;</span>,<span class="st">&quot;LAM&quot;</span>))
 <span class="co">#&gt; An object of class &quot;magpie&quot;</span>
 <span class="co">#&gt; , , scenario = B1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i        y1995  y2005  y2015  y2025  y2035  y2045  y2055  y2065  y2075</span>
-<span class="co">#&gt;   FSU 276.3431 296.84 305.26 309.78 311.47 309.03 301.99 292.46 281.39</span>
-<span class="co">#&gt;   LAM 451.9981 552.79 623.20 681.60 723.44 747.70 753.98 743.05 718.79</span>
+<span class="co">#&gt; i        y1995  y2005  y2015  y2025  y2035  y2045  y2055  y2065  y2075  y2085</span>
+<span class="co">#&gt;   FSU 276.3431 296.84 305.26 309.78 311.47 309.03 301.99 292.46 281.39 269.77</span>
+<span class="co">#&gt;   LAM 451.9981 552.79 623.20 681.60 723.44 747.70 753.98 743.05 718.79 683.68</span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i      y2085  y2095  y2105  y2115  y2125  y2135  y2145</span>
-<span class="co">#&gt;   FSU 269.77 257.52 251.04 251.04 251.04 251.04 251.04</span>
-<span class="co">#&gt;   LAM 683.68 637.69 611.88 611.88 611.88 611.88 611.88</span></code></pre></div>
+<span class="co">#&gt; i      y2095  y2105  y2115  y2125  y2135  y2145</span>
+<span class="co">#&gt;   FSU 257.52 251.04 251.04 251.04 251.04 251.04</span>
+<span class="co">#&gt;   LAM 637.69 611.88 611.88 611.88 611.88 611.88</span></code></pre></div>
 </div>
 <div id="data-transformations-calculations" class="section level3">
 <h3>Data transformations / calculations</h3>
@@ -410,15 +410,10 @@ d
 <span class="co">#&gt; , , 1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;      year</span>
-<span class="co">#&gt; i          y1995       y2005       y2015       y2025       y2035</span>
-<span class="co">#&gt;   RRR  689887091  1451074522  3061824487  5698475887  9479607771</span>
-<span class="co">#&gt;   CPA 8479820244 11780061055 13857036143 15355441102 15915856510</span>
-<span class="co">#&gt;   EUR  696497109   816352383   875637922   924135674   957967165</span>
-<span class="co">#&gt;      year</span>
-<span class="co">#&gt; i           y2045</span>
-<span class="co">#&gt;   RRR 14315871681</span>
-<span class="co">#&gt;   CPA 15600869364</span>
-<span class="co">#&gt;   EUR   962659440</span></code></pre></div>
+<span class="co">#&gt; i          y1995       y2005       y2015       y2025       y2035       y2045</span>
+<span class="co">#&gt;   RRR  689887091  1451074522  3061824487  5698475887  9479607771 14315871681</span>
+<span class="co">#&gt;   CPA 8479820244 11780061055 13857036143 15355441102 15915856510 15600869364</span>
+<span class="co">#&gt;   EUR  696497109   816352383   875637922   924135674   957967165   962659440</span></code></pre></div>
 <p>..over the second data dimension only</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dimSums</span>(d,<span class="dt">dim=</span><span class="fl">3.2</span>)
 <span class="co">#&gt; An object of class &quot;magpie&quot;</span>
@@ -461,20 +456,14 @@ d
 <span class="co">#&gt; , , newscen = NEWSCEN1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;       year</span>
-<span class="co">#&gt; region      y1995      y2005      y2015       y2025       y2035</span>
-<span class="co">#&gt;    GLO 4933102222 6995727898 8904158681 11295605448 14217834702</span>
-<span class="co">#&gt;       year</span>
-<span class="co">#&gt; region       y2045</span>
-<span class="co">#&gt;    GLO 17754013380</span>
+<span class="co">#&gt; region      y1995      y2005      y2015       y2025       y2035       y2045</span>
+<span class="co">#&gt;    GLO 4933102222 6995727898 8904158681 11295605448 14217834702 17754013380</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; , , newscen = NEWSCEN2</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;       year</span>
-<span class="co">#&gt; region      y1995      y2005      y2015       y2025       y2035</span>
-<span class="co">#&gt;    GLO 4933102222 7051760063 8890339872 10682447215 12135596744</span>
-<span class="co">#&gt;       year</span>
-<span class="co">#&gt; region       y2045</span>
-<span class="co">#&gt;    GLO 13125387105</span></code></pre></div>
+<span class="co">#&gt; region      y1995      y2005      y2015       y2025       y2035       y2045</span>
+<span class="co">#&gt;    GLO 4933102222 7051760063 8890339872 10682447215 12135596744 13125387105</span></code></pre></div>
 <p>apply a lowpass filter on the data</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lowpass</span>(d)
 <span class="co">#&gt; An object of class &quot;magpie&quot;</span>
@@ -752,6 +741,9 @@ d
 </div>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

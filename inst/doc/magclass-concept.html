@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="Jan Philipp Dietrich" />
 
-<meta name="date" content="2019-05-28" />
+<meta name="date" content="2019-12-06" />
 
 <title>Concept behind magclass</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -95,7 +95,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Concept behind magclass</h1>
 <h4 class="author">Jan Philipp Dietrich</h4>
-<h4 class="date">2019-05-28</h4>
+<h4 class="date">2019-12-06</h4>
 
 
 
@@ -243,17 +243,17 @@ d &lt;-<span class="st"> </span>c[<span class="dv">3</span><span class="op">:</s
 <span class="co"># correct summation based on dimension names:</span>
 c<span class="op">+</span>d
 <span class="co">#&gt; An object of class &quot;magpie&quot;</span>
-<span class="co">#&gt; , , NA = IndexA</span>
+<span class="co">#&gt; , , data = IndexA</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;      NA</span>
+<span class="co">#&gt;      year</span>
 <span class="co">#&gt; fake  y2000 y2001 y2002</span>
 <span class="co">#&gt;   AFR     2     4     6</span>
 <span class="co">#&gt;   CPA     8    10    12</span>
 <span class="co">#&gt;   EUR    14    16    18</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; , , NA = IndexB</span>
+<span class="co">#&gt; , , data = IndexB</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;      NA</span>
+<span class="co">#&gt;      year</span>
 <span class="co">#&gt; fake  y2000 y2001 y2002</span>
 <span class="co">#&gt;   AFR    20    22    24</span>
 <span class="co">#&gt;   CPA    26    28    30</span>
@@ -286,6 +286,9 @@ c<span class="op">+</span>d
 </div>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

@@ -1,8 +1,8 @@
 Package: magclass
 Type: Package
 Title: Data Class and Tools for Handling Spatial-Temporal Data
-Version: 4.107.0
-Date: 2019-05-28
+Version: 5.5.0
+Date: 2019-12-06
 Authors@R: c(person("Jan Philipp", "Dietrich", email = "dietrich@pik-potsdam.de", role = c("aut","cre")),
              person("Benjamin Leon", "Bodirsky", email = "bodirsky@pik-potsdam.de", role = "aut"),
              person("Markus", "Bonsch", role = "aut"),
@@ -34,10 +34,10 @@ BugReports: https://github.com/pik-piam/magclass/issues
 License: LGPL-3 | file LICENSE
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-05-28 21:45:36 UTC; jpd
+Packaged: 2019-12-06 20:22:15 UTC; jpd
 Author: Jan Philipp Dietrich [aut, cre],
   Benjamin Leon Bodirsky [aut],
   Markus Bonsch [aut],
@@ -55,4 +55,4 @@ Author: Jan Philipp Dietrich [aut, cre],
   Xiaoxi Wang [ctb]
 Maintainer: Jan Philipp Dietrich <dietrich@pik-potsdam.de>
 Repository: CRAN
-Date/Publication: 2019-05-29 08:00:14 UTC
+Date/Publication: 2019-12-06 21:10:02 UTC
