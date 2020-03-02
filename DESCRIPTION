@@ -1,8 +1,8 @@
 Package: magclass
 Type: Package
 Title: Data Class and Tools for Handling Spatial-Temporal Data
-Version: 5.7.0
-Date: 2019-12-09
+Version: 5.7.3
+Date: 2020-03-02
 Authors@R: c(person("Jan Philipp", "Dietrich", email = "dietrich@pik-potsdam.de", role = c("aut","cre")),
              person("Benjamin Leon", "Bodirsky", email = "bodirsky@pik-potsdam.de", role = "aut"),
              person("Markus", "Bonsch", role = "aut"),
@@ -37,7 +37,7 @@ Encoding: UTF-8
 RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-12-13 11:15:28 UTC; dietrich
+Packaged: 2020-03-02 11:55:05 UTC; dietrich
 Author: Jan Philipp Dietrich [aut, cre],
   Benjamin Leon Bodirsky [aut],
   Markus Bonsch [aut],
@@ -55,4 +55,4 @@ Author: Jan Philipp Dietrich [aut, cre],
   Xiaoxi Wang [ctb]
 Maintainer: Jan Philipp Dietrich <dietrich@pik-potsdam.de>
 Repository: CRAN
-Date/Publication: 2019-12-13 11:40:02 UTC
+Date/Publication: 2020-03-02 12:50:03 UTC
