@@ -1,16 +1,33 @@
 #' @importFrom methods new setGeneric
-#' @importFrom reshape2 melt
+#' @importFrom forcats fct_explicit_na
+
 #' @exportMethod as.magpie
 setGeneric("as.magpie", function(x,...)standardGeneric("as.magpie"))
 
 setMethod("as.magpie",signature(x = "magpie"),function (x) return(x))
 
-tmpfilter <- function(x, sep="\\.", replacement="_") {
-  if(is.factor(x)) {
-    levels(x) <- gsub(sep,replacement,levels(x))
-  } else if(is.character(x)) {
-    x < gsub(paste0("\\",sep),replacement,x)
+
+tmpfilter <- function(x,sep=".", replacement="_") {
+  .tmpfilter <- function(x, sep=".", replacement="_") {
+    .tmp <- function(x, sep, replacement) {
+      if(sep!=replacement) x <- gsub(sep, replacement, x, fixed = TRUE, useBytes = TRUE)  
+      x[x==""] <- " "
+      return(x)
+    }
+    if(is.factor(x)) {
+      levels(x) <- .tmp(levels(x), sep, replacement)
+    } else if(is.character(x)) {
+      x <- .tmp(x, sep, replacement)
+    }
+    return(x)
   }
+  cl <- class(x)
+  cn <- colnames(x)
+  rn <- rownames(x)
+  x <- as.data.frame(lapply(x, .tmpfilter, sep=sep, replacement=replacement))
+  colnames(x) <- cn
+  rownames(x) <- rn
+  class(x) <- cl
   return(x)
 }
 
@@ -173,18 +190,23 @@ setMethod("as.magpie",
 
 setMethod("as.magpie",
           signature(x = "data.frame"),
-          function (x, datacol=NULL, tidy=FALSE, sep=".", replacement="_", unit="unknown", ...)
+          function (x, datacol=NULL, tidy=FALSE, sep=".", replacement="_", unit="unknown", filter=TRUE, ...)
           {
             # filter illegal characters
-            for(i in 1:dim(x)[2]) {
-              x[[i]] <- tmpfilter(x[[i]], sep=paste0("\\",sep), replacement=replacement)
-              x[[i]] <- tmpfilter(x[[i]], sep="^$", replacement=" ")
+            if(isTRUE(filter)) {
+              x <- tmpfilter(x, sep=sep, replacement=replacement)
             }
+            
             if(tidy) return(tidy2magpie(x,...))
             if(dim(x)[1]==0) return(copy.attributes(x,new.magpie(NULL)))
             if(is.null(datacol)) {
+              is.numericlike <- function(x) {
+                .tmp <- function(x) return(all(!is.na(suppressWarnings(as.numeric(x[!is.na(x)])))))
+                if(isFALSE(.tmp(x[1]))) return(FALSE)
+                return(.tmp(x))
+              }
               for(i in dim(x)[2]:1) {
-                if(all(!is.na(suppressWarnings(as.numeric(x[,i])))) & !is.temporal(x[,i]) & !is.factor(x[,i])) {
+                if(!is.factor(x[[i]]) && is.numericlike(x[[i]]) && !is.temporal(x[[i]])) {
                   datacol <- i
                 } else {
                   break
@@ -196,6 +218,7 @@ setMethod("as.magpie",
               if(datacol==dim(x)[2]) return(tidy2magpie(x,...))
               x[[datacol-1]] <- as.factor(x[[datacol-1]])
             }
+            if (!requireNamespace("reshape2", quietly = TRUE)) stop("The package reshape2 is required for as.magpie applied on non-tidy data.frames!")
             out <- copy.attributes(x,tidy2magpie(suppressMessages(reshape2::melt(x)),...))
             return(updateMetadata(out, unit=unit))
           }
@@ -203,7 +226,7 @@ setMethod("as.magpie",
 
 setMethod("as.magpie",
           signature(x = "quitte"),
-          function(x, sep=".", replacement="_", ...)
+          function(x, sep=".", replacement="_", filter=TRUE, ...)
           {
               is.quitte <- function(x, warn=FALSE) {
                   # object is not formally defined as quitte class
@@ -248,21 +271,22 @@ setMethod("as.magpie",
               return(as.magpie(x,...))
             }
             x$period <- format(x$period, format = "y%Y")
-            x$unit <- tmpfilter(x$unit, sep="^$", replacement = " ")
             # filter illegal characters
-            for(i in 1:dim(x)[2]) {
-              x[[i]] <- tmpfilter(x[[i]], sep=paste0("\\",sep), replacement=replacement)
-              x[[i]] <- tmpfilter(x[[i]], sep="^$", replacement=" ")
-            }
             
+            if(isTRUE(filter)) {
+              x <- tmpfilter(x, sep=sep, replacement=replacement)
+            }
             
             if(length(grep("^cell$",names(x),ignore.case=TRUE)) > 0) {
               i <- grep("^cell$",names(x),ignore.case=TRUE,value=TRUE)
               x$region <- paste(x$region,x[[i]],sep=".")
               x <- x[names(x)!=i]
             }
-            #remove NA columns
-            x <- x[colSums(!is.na(x))!=0]
+            # remove NA columns
+            # and <NA> columns that have been replaced by 
+            # forcats::fct_explicit_na()
+            na_string <- formals(fct_explicit_na)[['na_level']]
+            x <- x[colSums(!(na_string == x | is.na(x))) != 0]
 
             #put value column as last column
             x <- x[c(which(names(x)!="value"),which(names(x)=="value"))]
@@ -284,5 +308,20 @@ setMethod("as.magpie",
               out <- as.magpie(x,...)
               return(updateMetadata(out, unit=unit))
             }
+          }
+)
+
+setMethod("as.magpie",
+          signature(x = "RasterLayer"),
+          function(x, unit="unknown", ...)
+          {
+            if (!requireNamespace("raster", quietly = TRUE)) stop("The package \"raster\" is required for conversion of raster objects!")
+            df <- as.data.frame(x,na.rm=TRUE)
+            co <- raster::coordinates(x)[as.integer(rownames(df)),]
+            co <- matrix(sub(".",",",co,fixed=TRUE),ncol=2)
+            colnames(co) <- c("lon","lat")
+            df <- cbind(co,df)
+            out <- tidy2magpie(df, spatial=1:2)
+            return(updateMetadata(out, unit=unit))
           }
 )

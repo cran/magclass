@@ -1,17 +1,17 @@
 
 #' Class "magpie" ~~~
-#' 
+#'
 #' The MAgPIE class is a data format for cellular MAgPIE data with a close
 #' relationship to the array data format. \code{is.magpie} tests if \code{x} is
 #' an MAgPIE-object, \code{as.magpie} transforms \code{x} to an MAgPIE-object
 #' (if possible).
-#' 
-#' 
+#'
+#'
 #' @name magpie-class
 #' @aliases magpie-class as.magpie as.magpie-methods as.magpie,magpie-method
 #' as.magpie,array-method as.magpie,lpj-method as.magpie,data.frame-method
 #' as.magpie,numeric-method as.magpie,NULL-method as.magpie,quitte-method
-#' as.magpie,tbl_df-method
+#' as.magpie,tbl_df-method as.magpie,RasterLayer-method
 #' is.magpie [,magpie-method [,magpie,ANY,ANY-method [<-,magpie,ANY,ANY-method
 #' [<-,magpie-method Ops,magpie,magpie-method Ops,magpie,numeric-method Ops,numeric,magpie-method
 #' @docType class
@@ -37,6 +37,11 @@
 #' the dimension separator (default is ".") and \code{replacement} defines how 
 #' the separator as a reserved character should be converted in order to not
 #' mess up with the object (default "_").
+#' Another available argument for conversions of data.frames and quitte 
+#' objects to magpie is \code{filter} if set to TRUE (default)
+#' "." (separator) will be replaced withe the \code{replacement} character and
+#' empty entries will be replaced with a single space. If set to FALSE no filter 
+#' will be applied to the data.
 #' @section Objects from the Class: Objects can be created by calls of the form
 #' \code{new("magpie", data, dim, dimnames, ...)}. MAgPIE objects have three
 #' dimensions (cells,years,datatype) and the dimensionnames of the first
@@ -83,6 +88,7 @@
 #' 
 #' 
 #' @exportClass magpie
+#' @importFrom data.table as.data.table
 #' @importFrom methods setClass
 
 
@@ -95,7 +101,7 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
   }
   if(.countdots(i[1])==.countdots(dimnames(x)[[dim]][1]) & pmatch==FALSE){
     #i vector seems to specify the full dimname
-    if(!anyDuplicated(dimnames(x)[[dim]])) {
+    if(!anyDuplicated(as.data.table(dimnames(x)[[dim]]))) {
       if(invert) {
         return(which(!(dimnames(x)[[dim]] %in% i)))
       } else {
@@ -128,7 +134,6 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
   if(any(dims==0)) {
     dfmissing <- df[dims==0]
     df <- df[dims!=0]
-    fdims <- dims
     dims <- dims[dims>0]
   } else {
     dfmissing <- NULL
@@ -145,7 +150,6 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
     dmissing <- which(!(1:maxdim%in%sdims))
     sdims <- c(sdims,dmissing)
     for(d in dmissing) df <- cbind(df,"[^\\.]*")
-    elems <- NULL
     search <-  paste0("^",apply(df[,sdims, drop=FALSE],1,paste,collapse="\\."),"$")
     found <- lapply(search,grep,getNames(x))
     x <- x[,,unlist(found)]
@@ -156,7 +160,7 @@ setClass("magpie",contains="array",prototype=array(0,c(0,0,0)))
       } else {
         name_extensions <- dfmissing[[1]]
       }
-      getNames(x) <- paste(getNames(x),name_extensions[rep(1:length(name_extensions),length)],sep=".")
+      getNames(x) <- paste(getNames(x),name_extensions[rep(seq_along(name_extensions),length)],sep=".")
       getSets(x,fulldim=FALSE)[3] <- paste(getSets(x,fulldim=FALSE)[3],paste(names(dfmissing),collapse="."),sep=".")
     }
     if(any(length==0) & nrow(df)>0) {
@@ -196,7 +200,7 @@ setMethod("[",
               }
               if(is.null(j)) {
                 j <- 1:dim(x)[2]
-              } else if(is.character(j) && grepl(".",dimnames(x)[[2]][1],fixed=TRUE)) {
+              } else if(is.character(j) && !is.null(dimnames(x)[[2]]) && grepl(".",dimnames(x)[[2]][1],fixed=TRUE)) {
                 j <- .dimextract(x,j,2,pmatch=pmatch,invert=invert)
               } else if(invert) {
                 j <- getYears(x)[!(getYears(x) %in% j)]
@@ -206,31 +210,22 @@ setMethod("[",
               if(is.factor(k)) k <- as.character(k)
               if(is.character(k)) k <- .dimextract(x,k,3,pmatch=pmatch,invert=invert)
             }
-            if(ifelse(missing(i),FALSE,is.array(i) | any(abs(i)>dim(x)[1]))) {
-              #indices are supplied as array, return data as numeric
+            .isFALSE <- function(x) return(is.logical(x) && length(x) == 1 && !is.na(x) && !x)
+            if(!missing(i) && missing(j) && !missing(k) && .isFALSE(k) && .isFALSE(drop) && .isFALSE(pmatch) && .isFALSE(invert)) {
+              # there is a weird case in which k is actually missing but is getting the value of the next argument in line (drop)
+              # this one is catched via .isFALSE(k)
+              # in addition non-default settings for drop, pmatch and invert indicate that object should still be 
+              # returned as magpie object (and not as numeric as the following line will do)
               return(x@.Data[i])
-            } else if(missing(j) & ifelse(missing(k),TRUE,is.logical(k)) & ifelse(missing(i),FALSE,all(abs(i)<=dim(x)[1]))) {
-              if(length(x@.Data[i,,,drop=FALSE])==0) {
-                return(x@.Data[i])
-              } else {
-                x@.Data <- x@.Data[i,,,drop=FALSE]
-                if(drop) x <- collapseNames(x)
-                return(x)
-              }
-            } else {    
-              if(!missing(k)) {
-                if(is.logical(k)) {
-                  # weird case in which k should be actually missing but gets the value of the next argument in the argument list (drop)
-                  x@.Data <- x@.Data[i,j,,drop=FALSE] 
-                } else {
-                  x@.Data <- x@.Data[i,j,k,drop=FALSE]
-                }
-              } else {
-                x@.Data <- x@.Data[i,j,,drop=FALSE]                
-              }
-              if(drop) x <- collapseNames(x)
-              return(x)
+            } 
+            if(!missing(k) && .isFALSE(k)) {
+              # still need to handle weird k=FALSE case separately
+              x@.Data <- x@.Data[i,j,,drop=FALSE]  
+            } else {
+              x@.Data <- x@.Data[i,j,k,drop=FALSE]
             }
+            if(drop) x <- collapseNames(x)
+            return(x)
     }
 )
 
