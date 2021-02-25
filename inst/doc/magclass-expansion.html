@@ -12,7 +12,7 @@
 
 <meta name="author" content="Jan Philipp Dietrich" />
 
-<meta name="date" content="2020-12-14" />
+<meta name="date" content="2021-02-24" />
 
 <title>MAGPIE Class Object Expansion</title>
 
@@ -32,45 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
-<style type="text/css">
-a.anchor-section {margin-left: 10px; visibility: hidden; color: inherit;}
-a.anchor-section::before {content: '#';}
-.hasAnchor:hover a.anchor-section {visibility: visible;}
-</style>
-<script>// Anchor sections v1.0 written by Atsushi Yasumoto on Oct 3rd, 2020.
-document.addEventListener('DOMContentLoaded', function() {
-  // Do nothing if AnchorJS is used
-  if (typeof window.anchors === 'object' && anchors.hasOwnProperty('hasAnchorJSLink')) {
-    return;
-  }
-
-  const h = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
-  // Do nothing if sections are already anchored
-  if (Array.from(h).some(x => x.classList.contains('hasAnchor'))) {
-    return null;
-  }
-
-  // Use section id when pandoc runs with --section-divs
-  const section_id = function(x) {
-    return ((x.classList.contains('section') || (x.tagName === 'SECTION'))
-            ? x.id : '');
-  };
-
-  // Add anchors
-  h.forEach(function(x) {
-    const id = x.id || section_id(x.parentElement);
-    if (id === '') {
-      return null;
-    }
-    let anchor = document.createElement('a');
-    anchor.href = '#' + id;
-    anchor.classList = ['anchor-section'];
-    x.classList.add('hasAnchor');
-    x.appendChild(anchor);
-  });
-});
-</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -82,7 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
 code.sourceCode > span { display: inline-block; line-height: 1.25; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -170,6 +138,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   }
 })();
 </script>
+
 
 
 
@@ -367,7 +336,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">MAGPIE Class Object Expansion</h1>
 <h4 class="author">Jan Philipp Dietrich</h4>
-<h4 class="date">2020-12-14</h4>
+<h4 class="date">2021-02-24</h4>
 
 
 
@@ -380,16 +349,15 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(magclass)</span>
 <span id="cb1-2"><a href="#cb1-2"></a></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="co"># </span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>a &lt;-<span class="st"> </span>population_magpie</span>
-<span id="cb1-5"><a href="#cb1-5"></a>b &lt;-<span class="st"> </span>population_magpie</span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">getRegions</span>(b)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;AAA&quot;</span></span></code></pre></div>
+<span id="cb1-4"><a href="#cb1-4"></a>a &lt;-<span class="st"> </span>b &lt;-<span class="st"> </span><span class="kw">maxample</span>(<span class="st">&quot;pop&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">getRegions</span>(b)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;AAA&quot;</span></span></code></pre></div>
 <p>The multiplication for auto expand version 1 (magclass &lt; 5.0) fails:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="dv">1</span>) <span class="co"># default setting for magclass &lt; 5.0</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="co">#&gt; Error in magpie_expand1(x, ref): Cannot expand MAgPIE object! Incompatible cells (same length, different cell names).</span></span></code></pre></div>
-<p>The same calculation with auto expand version 2 (magclass &gt;= 5.0) works:</p>
+<p>The same calculation with auto expand version 2.1 (magclass &gt;= 5.0) works:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="dv">2</span>) <span class="co"># default setting for magclass &gt;= 5.0</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="fl">2.1</span>) <span class="co"># default setting for magclass &gt;= 5.0</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="co">#&gt; An object of class &quot;magpie&quot;</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a><span class="co">#&gt; , , scenario = A2</span></span>
@@ -397,16 +365,16 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-7"><a href="#cb3-7"></a><span class="co">#&gt;          t</span></span>
 <span id="cb3-8"><a href="#cb3-8"></a><span class="co">#&gt; i.i1         y1995    y2005     y2015     y2025     y2035   y2045</span></span>
 <span id="cb3-9"><a href="#cb3-9"></a><span class="co">#&gt;   AFR.AAA 305440.1 485028.7  790641.1 1263623.3 1930237.7 2754704</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="co">#&gt;   CPA.AAA 707763.9 995581.9 1350184.2 1789684.2 2279820.9 2774969</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a><span class="co">#&gt;   EUR.AAA 306419.5 405578.8  527959.5  680390.1  853854.4 1027323</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co">#&gt;   AFR.CPA 707763.9 995581.9 1350184.2 1789684.2 2279820.9 2774969</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">#&gt;   AFR.EUR 306419.5 405578.8  527959.5  680390.1  853854.4 1027323</span></span>
 <span id="cb3-12"><a href="#cb3-12"></a><span class="co">#&gt; </span></span>
 <span id="cb3-13"><a href="#cb3-13"></a><span class="co">#&gt; , , scenario = B1</span></span>
 <span id="cb3-14"><a href="#cb3-14"></a><span class="co">#&gt; </span></span>
 <span id="cb3-15"><a href="#cb3-15"></a><span class="co">#&gt;          t</span></span>
 <span id="cb3-16"><a href="#cb3-16"></a><span class="co">#&gt; i.i1         y1995     y2005     y2015     y2025     y2035     y2045</span></span>
 <span id="cb3-17"><a href="#cb3-17"></a><span class="co">#&gt;   AFR.AAA 305440.1  521067.4  868698.5 1250661.9 1606125.2 1913352.9</span></span>
-<span id="cb3-18"><a href="#cb3-18"></a><span class="co">#&gt;   CPA.AAA 707763.9 1031711.3 1397817.6 1712297.4 1924732.0 2024620.8</span></span>
-<span id="cb3-19"><a href="#cb3-19"></a><span class="co">#&gt;   EUR.AAA 306419.5  423877.5  562607.3  686632.2  785085.5  853625.1</span></span></code></pre></div>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">#&gt;   AFR.CPA 707763.9 1031711.3 1397817.6 1712297.4 1924732.0 2024620.8</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="co">#&gt;   AFR.EUR 306419.5  423877.5  562607.3  686632.2  785085.5  853625.1</span></span></code></pre></div>
 <p>As this modification only changes cases which did not work previously it could be included without causing backwards compatibility issues.</p>
 </div>
 <div id="set-matching" class="section level2">
@@ -416,32 +384,31 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="idential-set-elements-different-set-names" class="section level3">
 <h3>Idential set elements, different set names</h3>
 <p>Without set matching, identical set elements but different set names produce a simple entity matching without expansion:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="dv">2</span>) <span class="co"># default setting for magclass &gt;= 5.0</span></span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="fl">2.1</span>) <span class="co"># default setting for magclass &gt;= 5.0</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
-<span id="cb4-3"><a href="#cb4-3"></a>a &lt;-<span class="st"> </span>population_magpie</span>
-<span id="cb4-4"><a href="#cb4-4"></a>b &lt;-<span class="st"> </span>population_magpie</span>
-<span id="cb4-5"><a href="#cb4-5"></a></span>
-<span id="cb4-6"><a href="#cb4-6"></a><span class="kw">getSets</span>(a)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;import&quot;</span></span>
-<span id="cb4-7"><a href="#cb4-7"></a><span class="kw">getSets</span>(b)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;export&quot;</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a></span>
-<span id="cb4-9"><a href="#cb4-9"></a><span class="kw">options</span>(<span class="dt">magclass_setMatching=</span><span class="ot">FALSE</span>)</span>
-<span id="cb4-10"><a href="#cb4-10"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
-<span id="cb4-11"><a href="#cb4-11"></a><span class="co">#&gt; An object of class &quot;magpie&quot;</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a><span class="co">#&gt; , , scenario = A2</span></span>
-<span id="cb4-13"><a href="#cb4-13"></a><span class="co">#&gt; </span></span>
-<span id="cb4-14"><a href="#cb4-14"></a><span class="co">#&gt;       t</span></span>
-<span id="cb4-15"><a href="#cb4-15"></a><span class="co">#&gt; import     y1995     y2005     y2015     y2025     y2035     y2045</span></span>
-<span id="cb4-16"><a href="#cb4-16"></a><span class="co">#&gt;    AFR  305440.1  485028.7  790641.1 1263623.3 1930237.7 2754703.6</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a><span class="co">#&gt;    CPA 1640026.0 2043556.1 2305720.7 2534750.5 2692716.7 2795383.2</span></span>
-<span id="cb4-18"><a href="#cb4-18"></a><span class="co">#&gt;    EUR  307402.0  339143.2  352550.9  366351.8  377708.6  383123.8</span></span>
-<span id="cb4-19"><a href="#cb4-19"></a><span class="co">#&gt; </span></span>
-<span id="cb4-20"><a href="#cb4-20"></a><span class="co">#&gt; , , scenario = B1</span></span>
-<span id="cb4-21"><a href="#cb4-21"></a><span class="co">#&gt; </span></span>
-<span id="cb4-22"><a href="#cb4-22"></a><span class="co">#&gt;       t</span></span>
-<span id="cb4-23"><a href="#cb4-23"></a><span class="co">#&gt; import     y1995     y2005     y2015     y2025     y2035     y2045</span></span>
-<span id="cb4-24"><a href="#cb4-24"></a><span class="co">#&gt;    AFR  305440.1  521067.4  868698.5 1250661.9 1606125.2 1913352.9</span></span>
-<span id="cb4-25"><a href="#cb4-25"></a><span class="co">#&gt;    CPA 1640026.0 2042784.2 2249220.0 2344328.4 2306540.8 2142359.3</span></span>
-<span id="cb4-26"><a href="#cb4-26"></a><span class="co">#&gt;    EUR  307402.0  344815.6  364369.2  376971.4  383755.4  380837.1</span></span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3"></a>a &lt;-<span class="st"> </span>b &lt;-<span class="st"> </span><span class="kw">maxample</span>(<span class="st">&quot;pop&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="kw">getSets</span>(a)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;import&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="kw">getSets</span>(b)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;export&quot;</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="kw">options</span>(<span class="dt">magclass_setMatching=</span><span class="ot">FALSE</span>)</span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="co">#&gt; An object of class &quot;magpie&quot;</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co">#&gt; , , scenario = A2</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="co">#&gt; </span></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="co">#&gt;       t</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="co">#&gt; import     y1995     y2005     y2015     y2025     y2035     y2045</span></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="co">#&gt;    AFR  305440.1  485028.7  790641.1 1263623.3 1930237.7 2754703.6</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="co">#&gt;    CPA 1640026.0 2043556.1 2305720.7 2534750.5 2692716.7 2795383.2</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="co">#&gt;    EUR  307402.0  339143.2  352550.9  366351.8  377708.6  383123.8</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="co">#&gt; </span></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="co">#&gt; , , scenario = B1</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="co">#&gt; </span></span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="co">#&gt;       t</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="co">#&gt; import     y1995     y2005     y2015     y2025     y2035     y2045</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="co">#&gt;    AFR  305440.1  521067.4  868698.5 1250661.9 1606125.2 1913352.9</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a><span class="co">#&gt;    CPA 1640026.0 2042784.2 2249220.0 2344328.4 2306540.8 2142359.3</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a><span class="co">#&gt;    EUR  307402.0  344815.6  364369.2  376971.4  383755.4  380837.1</span></span></code></pre></div>
 <p>With set matching the same calculation will expand the spatial dimension to a cross product of each region with each other:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">options</span>(<span class="dt">magclass_setMatching=</span><span class="ot">TRUE</span>)</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
@@ -451,50 +418,49 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb5-6"><a href="#cb5-6"></a><span class="co">#&gt;              t</span></span>
 <span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt; import.export    y1995    y2005     y2015     y2025     y2035   y2045</span></span>
 <span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt;       AFR.AFR 305440.1 485028.7  790641.1 1263623.3 1930237.7 2754704</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a><span class="co">#&gt;       CPA.AFR 707763.9 995581.9 1350184.2 1789684.2 2279820.9 2774969</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a><span class="co">#&gt;       EUR.AFR 306419.5 405578.8  527959.5  680390.1  853854.4 1027323</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="co">#&gt;       AFR.CPA 707763.9 995581.9 1350184.2 1789684.2 2279820.9 2774969</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co">#&gt;       AFR.EUR 306419.5 405578.8  527959.5  680390.1  853854.4 1027323</span></span>
 <span id="cb5-11"><a href="#cb5-11"></a><span class="co">#&gt; </span></span>
 <span id="cb5-12"><a href="#cb5-12"></a><span class="co">#&gt; , , scenario = B1</span></span>
 <span id="cb5-13"><a href="#cb5-13"></a><span class="co">#&gt; </span></span>
 <span id="cb5-14"><a href="#cb5-14"></a><span class="co">#&gt;              t</span></span>
 <span id="cb5-15"><a href="#cb5-15"></a><span class="co">#&gt; import.export    y1995     y2005     y2015     y2025     y2035     y2045</span></span>
 <span id="cb5-16"><a href="#cb5-16"></a><span class="co">#&gt;       AFR.AFR 305440.1  521067.4  868698.5 1250661.9 1606125.2 1913352.9</span></span>
-<span id="cb5-17"><a href="#cb5-17"></a><span class="co">#&gt;       CPA.AFR 707763.9 1031711.3 1397817.6 1712297.4 1924732.0 2024620.8</span></span>
-<span id="cb5-18"><a href="#cb5-18"></a><span class="co">#&gt;       EUR.AFR 306419.5  423877.5  562607.3  686632.2  785085.5  853625.1</span></span></code></pre></div>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="co">#&gt;       AFR.CPA 707763.9 1031711.3 1397817.6 1712297.4 1924732.0 2024620.8</span></span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="co">#&gt;       AFR.EUR 306419.5  423877.5  562607.3  686632.2  785085.5  853625.1</span></span></code></pre></div>
 </div>
 <div id="different-set-element-identical-set-names" class="section level3">
 <h3>Different set element, identical set names</h3>
 <p>If the set elements are different but the set names identical this will lead to an expansion of the spatial dimension in the case without set matching (as the set name is just ignored):</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="dv">2</span>) <span class="co"># default setting for magclass &gt;= 5.0</span></span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">options</span>(<span class="dt">magclass_expand_version=</span><span class="fl">2.1</span>) <span class="co"># default setting for magclass &gt;= 5.0</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a></span>
-<span id="cb6-3"><a href="#cb6-3"></a>a &lt;-<span class="st"> </span>population_magpie</span>
-<span id="cb6-4"><a href="#cb6-4"></a>b &lt;-<span class="st"> </span>population_magpie</span>
-<span id="cb6-5"><a href="#cb6-5"></a></span>
-<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">getRegions</span>(a)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;AAA&quot;</span></span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="kw">getRegions</span>(b)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;BBB&quot;</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a></span>
-<span id="cb6-9"><a href="#cb6-9"></a><span class="kw">options</span>(<span class="dt">magclass_setMatching=</span><span class="ot">FALSE</span>)</span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; An object of class &quot;magpie&quot;</span></span>
-<span id="cb6-12"><a href="#cb6-12"></a><span class="co">#&gt; , , scenario = A2</span></span>
-<span id="cb6-13"><a href="#cb6-13"></a><span class="co">#&gt; </span></span>
-<span id="cb6-14"><a href="#cb6-14"></a><span class="co">#&gt;          t</span></span>
-<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt; i.i1         y1995    y2005     y2015     y2025     y2035   y2045</span></span>
-<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt;   AAA.BBB 305440.1 485028.7  790641.1 1263623.3 1930237.7 2754704</span></span>
-<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt;   CPA.BBB 707763.9 995581.9 1350184.2 1789684.2 2279820.9 2774969</span></span>
-<span id="cb6-18"><a href="#cb6-18"></a><span class="co">#&gt;   EUR.BBB 306419.5 405578.8  527959.5  680390.1  853854.4 1027323</span></span>
-<span id="cb6-19"><a href="#cb6-19"></a><span class="co">#&gt; </span></span>
-<span id="cb6-20"><a href="#cb6-20"></a><span class="co">#&gt; , , scenario = B1</span></span>
-<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt; </span></span>
-<span id="cb6-22"><a href="#cb6-22"></a><span class="co">#&gt;          t</span></span>
-<span id="cb6-23"><a href="#cb6-23"></a><span class="co">#&gt; i.i1         y1995     y2005     y2015     y2025     y2035     y2045</span></span>
-<span id="cb6-24"><a href="#cb6-24"></a><span class="co">#&gt;   AAA.BBB 305440.1  521067.4  868698.5 1250661.9 1606125.2 1913352.9</span></span>
-<span id="cb6-25"><a href="#cb6-25"></a><span class="co">#&gt;   CPA.BBB 707763.9 1031711.3 1397817.6 1712297.4 1924732.0 2024620.8</span></span>
-<span id="cb6-26"><a href="#cb6-26"></a><span class="co">#&gt;   EUR.BBB 306419.5  423877.5  562607.3  686632.2  785085.5  853625.1</span></span></code></pre></div>
+<span id="cb6-3"><a href="#cb6-3"></a>a &lt;-<span class="st"> </span>b &lt;-<span class="st"> </span><span class="kw">maxample</span>(<span class="st">&quot;pop&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4"></a></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="kw">getRegions</span>(a)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;AAA&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">getRegions</span>(b)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;BBB&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="kw">options</span>(<span class="dt">magclass_setMatching=</span><span class="ot">FALSE</span>)</span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co">#&gt; An object of class &quot;magpie&quot;</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; , , scenario = A2</span></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="co">#&gt; </span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="co">#&gt;          t</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="co">#&gt; i.i1         y1995    y2005     y2015     y2025     y2035   y2045</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt;   AAA.BBB 305440.1 485028.7  790641.1 1263623.3 1930237.7 2754704</span></span>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt;   AAA.CPA 707763.9 995581.9 1350184.2 1789684.2 2279820.9 2774969</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt;   AAA.EUR 306419.5 405578.8  527959.5  680390.1  853854.4 1027323</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="co">#&gt; </span></span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="co">#&gt; , , scenario = B1</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a><span class="co">#&gt; </span></span>
+<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt;          t</span></span>
+<span id="cb6-22"><a href="#cb6-22"></a><span class="co">#&gt; i.i1         y1995     y2005     y2015     y2025     y2035     y2045</span></span>
+<span id="cb6-23"><a href="#cb6-23"></a><span class="co">#&gt;   AAA.BBB 305440.1  521067.4  868698.5 1250661.9 1606125.2 1913352.9</span></span>
+<span id="cb6-24"><a href="#cb6-24"></a><span class="co">#&gt;   AAA.CPA 707763.9 1031711.3 1397817.6 1712297.4 1924732.0 2024620.8</span></span>
+<span id="cb6-25"><a href="#cb6-25"></a><span class="co">#&gt;   AAA.EUR 306419.5  423877.5  562607.3  686632.2  785085.5  853625.1</span></span></code></pre></div>
 <p>With set matching it will return an error as identical set names but differing elements indicates most likely an error.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">options</span>(<span class="dt">magclass_setMatching=</span><span class="ot">TRUE</span>)</span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="kw">head</span>(a<span class="op">*</span>b)</span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="co">#&gt; Error in magpie_expand2(x, ref): Identical set names (i) but different content. Correct set names!</span></span></code></pre></div>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">#&gt; Error in magpie_expand_dim(x, ref, dim = i):  Identical set names but different content. Correct set names!</span></span></code></pre></div>
 <p>To ensure that existing calculations continue to work as they did before use <code>options(magclass_setMatching=FALSE)</code>, to write new code more consistently with magclass objects use <code>options(magclass_setMatching=TRUE)</code>.</p>
 </div>
 </div>
