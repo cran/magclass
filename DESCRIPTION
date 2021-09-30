@@ -1,8 +1,8 @@
 Package: magclass
 Type: Package
 Title: Data Class and Tools for Handling Spatial-Temporal Data
-Version: 5.24.7
-Date: 2021-02-24
+Version: 6.0.9
+Date: 2021-09-29
 Authors@R: c(person("Jan Philipp", "Dietrich", email = "dietrich@pik-potsdam.de", role = c("aut","cre")),
              person("Benjamin Leon", "Bodirsky", email = "bodirsky@pik-potsdam.de", role = "aut"),
              person("Markus", "Bonsch", role = "aut"),
@@ -30,17 +30,17 @@ Description: Data class for increased interoperability working with spatial-
 Depends: R(>= 2.10.0), methods,
 Imports: stats, sp, maptools, abind, data.table, forcats
 Suggests: testthat, knitr, rmarkdown, reshape2, data.tree, raster,
-        units(>= 0.7.0), udunits2, ncdf4, covr
+        ncdf4, covr
 URL: https://github.com/pik-piam/magclass,
         https://doi.org/10.5281/zenodo.1158580
 BugReports: https://github.com/pik-piam/magclass/issues
 License: LGPL-3 | file LICENSE
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2021-02-24 11:12:40 UTC; dietrich
+Packaged: 2021-09-29 14:11:55 UTC; dietrich
 Author: Jan Philipp Dietrich [aut, cre],
   Benjamin Leon Bodirsky [aut],
   Markus Bonsch [aut],
@@ -60,4 +60,4 @@ Author: Jan Philipp Dietrich [aut, cre],
   Felicitas Beier [ctb]
 Maintainer: Jan Philipp Dietrich <dietrich@pik-potsdam.de>
 Repository: CRAN
-Date/Publication: 2021-02-25 16:50:02 UTC
+Date/Publication: 2021-09-30 10:10:01 UTC

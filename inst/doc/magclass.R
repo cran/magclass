@@ -5,20 +5,20 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(magclass)
 
 # creating a magpie object with 2 regions, 2 years and 2 different values
-m <- new.magpie(cells_and_regions=c("AFR","CPA"),
-                years=c(1995,2000),
-                names=c("bla","blub"),
-                sets=c("region","year","value"),
-                fill=0)
+m <- new.magpie(cells_and_regions = c("AFR", "CPA"),
+  years = c(1995, 2000),
+  names = c("bla", "blub"),
+  sets = c("region", "year", "value"),
+  fill = 0)
 print(m)
 
 # converting a simple vector with one value per region to a magpie object
-v <- c(ENG=10, USA=20, BRA=30, CHN=40, IND=50)
+v <- c(ENG = 10, USA = 20, BRA = 30, CHN = 40, IND = 50)
 m2 <- as.magpie(v)
 str(m2)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-m3 <- as.magpie(v, spatial=0) 
+m3 <- as.magpie(v, spatial = 0)
 str(m3)
 
 ## ---- echo = TRUE-------------------------------------------------------------
@@ -45,7 +45,7 @@ nyears(pm)
 getNames(pm)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-getNames(pm,fulldim=TRUE)
+getNames(pm, fulldim = TRUE)
 
 ## ---- echo = TRUE-------------------------------------------------------------
 ndata(pm)
@@ -57,75 +57,75 @@ getSets(pm)
 getComment(pm)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-fulldim(pm)
+getItems(pm, split = TRUE)
 
 ## ---- echo = TRUE-------------------------------------------------------------
 dimnames(pm)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-getComment(pm) <- "This is a comment!" 
+getComment(pm) <- "This is a comment!"
 getComment(pm)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-pm2 <- setComment(pm,"This is comment for pm2!")
+pm2 <- setComment(pm, "This is comment for pm2!")
 getComment(pm2)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-getRegions(pm)[1] <- "RRR" 
+getRegions(pm)[1] <- "RRR"
 
 ## ---- echo = TRUE-------------------------------------------------------------
-getSets(pm)[2] <- "year" 
+getSets(pm)[2] <- "year"
 
 ## ---- echo = TRUE-------------------------------------------------------------
-pm["LAM",c(2005,2015),"A2"]
+pm["LAM", c(2005, 2015), "A2"]
 
 ## ---- echo = TRUE-------------------------------------------------------------
-pm["AS",,,pmatch=TRUE]
+pm["AS", , , pmatch = TRUE]
 
 ## ---- echo = TRUE-------------------------------------------------------------
-mselect(pm, scenario="B1", i=c("FSU","LAM"))
+mselect(pm, scenario = "B1", i = c("FSU", "LAM"))
 
 ## ---- echo = TRUE-------------------------------------------------------------
-pm[list(i=c("FSU","LAM")),,list(scenario="B1")]
+pm[list(i = c("FSU", "LAM")), , list(scenario = "B1")]
 
 ## ---- echo = TRUE-------------------------------------------------------------
 d <- head(pm)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-d2 <- d^2+12*d+99/exp(d)
-getNames(d2) <- c("NEWSCEN1","NEWSCEN2")
+d2 <- d^2 + 12 * d + 99 / exp(d)
+getNames(d2) <- c("NEWSCEN1", "NEWSCEN2")
 getSets(d2)[3] <- "newscen"
 d2
 
 ## ---- echo = TRUE-------------------------------------------------------------
-d <- d*d2
+d <- d * d2
 d
 
 ## ---- echo = TRUE-------------------------------------------------------------
-d2*d2
+d2 * d2
 
 ## ---- echo = TRUE-------------------------------------------------------------
-dimSums(d,dim=3)
+dimSums(d, dim = 3)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-dimSums(d,dim=3.2)
+dimSums(d, dim = 3.2)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-dimSums(d,dim="newscen")
+dimSums(d, dim = "newscen")
 
 ## ---- echo = TRUE-------------------------------------------------------------
-dimSums(d,dim=c(1,3.1))
+dimSums(d, dim = c(1, 3.1))
 
 ## ---- echo = TRUE-------------------------------------------------------------
 lowpass(d)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-time_interpolate(d,2005:2030)
+time_interpolate(d, 2005:2030)
 
 ## ---- echo = TRUE-------------------------------------------------------------
-d1 <- d[,1:3,]*100
-d2 <- d[,4:6,]*(-1)
-dd <- mbind(d1,d2)
+d1 <- d[, 1:3, ] * 100
+d2 <- d[, 4:6, ] * (-1)
+dd <- mbind(d1, d2)
 dd
 
 ## ---- echo = TRUE-------------------------------------------------------------
@@ -133,5 +133,5 @@ d[d > 0.5] <- 0.51
 d
 
 ## ---- echo = TRUE-------------------------------------------------------------
-round(d,0)
+round(d, 0)
 
