@@ -28,7 +28,7 @@
 #' write.report(maxample("pop"))
 #' @importFrom utils write.table
 #' @export
-write.report <- function(x, file = NULL, model = NULL, scenario = NULL, unit = NULL, ndigit = 4,
+write.report <- function(x, file = NULL, model = NULL, scenario = NULL, unit = NULL, ndigit = 4, # nolint
                          append = FALSE, skipempty = TRUE, extracols = NULL) {
 
   scenarioCall <- scenario
@@ -82,7 +82,6 @@ write.report <- function(x, file = NULL, model = NULL, scenario = NULL, unit = N
 
 prepareData <- function(x, model = NULL, scenario = NULL, unit = NULL, skipempty = FALSE,
                         ndigit = 4, extracols = NULL) {
-  if (!requireNamespace("reshape2", quietly = TRUE)) stop("The package reshape2 is required for write.report!")
   sep <- "."
   # clean data
   x <- round(clean_magpie(x, what = "sets"), digits = ndigit)
@@ -98,9 +97,9 @@ prepareData <- function(x, model = NULL, scenario = NULL, unit = NULL, skipempty
     x <- x[, , which(!d)]
   }
 
-  # convert to data frame
-  x <- reshape2::dcast(reshape2::melt(x, as.is = TRUE, na.rm = skipempty),
-                       eval(parse(text = paste0("...~", names(dimnames(x))[2]))))
+  # convert to data.table, reshape and convert to data.frame
+  x <- data.table::setDF(data.table::dcast(data.table::as.data.table(x, na.rm = skipempty),
+                                           eval(parse(text = paste0("...~", names(dimnames(x))[2])))))
 
   # split data and dimension information
   data <- x[3:length(x)]
@@ -118,20 +117,11 @@ prepareData <- function(x, model = NULL, scenario = NULL, unit = NULL, skipempty
   }
   for (i in grep(sep, names(x), fixed = TRUE, useBytes = TRUE)) x <- colsplit(x, i, sep = sep)
 
-  unitsplit <- function(x, col) {
-    w <- grepl("\\(.*\\)", x[[col]])
-    x[[col]][!w] <- paste0(x[[col]][!w], " (N/A)")
-    key <- "(.*?) \\((([^\\|]*))\\)($|\\.)"
-    tmp <- data.frame(sub(key, "\\1", x[[col]]),
-                      sub(key, "\\2", x[[col]]))
-    names(tmp) <- c(names(x)[col], "unit")
-    x <- cbind(tmp, x[setdiff(seq_len(ncol(x)), col)])
-    return(x)
-  }
   for (i in seq_along(x)) {
-    if (!(tolower(names(x)[i]) %in% c("scenario", "model", "region"))) {
-      if (any(grepl(" \\(.*\\)$", x[i]))) x <- unitsplit(x, i)
-    }
+    if (tolower(names(x)[i]) %in% c("scenario", "model", "region")) next
+    if (!inherits(x[[i]], "character")) next
+    if (!any(grepl(" \\(.*\\)$", x[[i]]))) next
+    x <- unitsplit(x, i)
   }
 
   correctNames <- function(x, name = "Scenario", replacement = NULL) {

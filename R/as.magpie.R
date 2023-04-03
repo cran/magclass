@@ -1,5 +1,4 @@
 #' @importFrom methods new setGeneric
-#' @importFrom forcats fct_explicit_na
 #' @importFrom data.table as.data.table tstrsplit melt
 
 #' @exportMethod as.magpie
@@ -47,6 +46,26 @@ setMethod("as.magpie",
   }
 )
 
+setMethod("as.magpie",
+          signature(x = "LPJmLData"),
+          function(x) {
+            if (!requireNamespace("lpjmlkit", quietly = TRUE)) {
+              stop("The package \"lpjmlkit\" is required for LPJmLData conversions!")
+            }
+            y <- lpjmlkit::transform(x, to = c("cell", "time"))
+            y <- lpjmlkit::as_array(y)
+            if (!is.null(x$grid)) {
+              grid <- paste0(sub(".", "p", x$grid$data[, 1], fixed = TRUE), ".",
+                             sub(".", "p", x$grid$data[, 2], fixed = TRUE))
+              names(grid) <- rownames(x$grid$data)
+              dimnames(y)[[1]] <- paste0(grid[dimnames(y)[[1]]], ".", dimnames(y)[[1]])
+              names(dimnames(y))[1] <- c("x.y.cell")
+            }
+            out <- new("magpie", y)
+            return(out)
+          }
+)
+
 setMethod("as.magpie", # nolint
   signature(x = "array"),
   function(x, spatial = NULL, temporal = NULL, unit = "unknown", ...) {
@@ -75,7 +94,9 @@ setMethod("as.magpie", # nolint
         if (is.null(temporal)) {
           if (is.temporal(dimnames(x)[[i]])) d$temporal <- c(d$temporal, i) # temporal information
         }
-      } else if (dim(x)[i] == 1) d$nothing <- c(d$nothing, i)   # dimension with no content
+      } else if (dim(x)[i] == 1) {
+        d$nothing <- c(d$nothing, i)   # dimension with no content
+      }
     }
 
     if (!is.null(spatial)) {
@@ -214,7 +235,7 @@ setMethod("as.magpie",
         if (.isFALSE(.tmp(x[1]))) return(FALSE)
         return(.tmp(x))
       }
-      for (i in dim(x)[2]:1) {
+      for (i in rev(seq_len(dim(x)[2]))) {
         if (!is.factor(x[[i]]) && isNumericlike(x[[i]]) && !is.temporal(x[[i]])) {
           datacol <- i
         } else {
@@ -227,8 +248,15 @@ setMethod("as.magpie",
       if (datacol == dim(x)[2]) return(tidy2magpie(x, ...))
       x[[datacol - 1]] <- as.factor(x[[datacol - 1]])
     }
-    if (!requireNamespace("reshape2", quietly = TRUE)) stop("The package reshape2 is required")
-    out <- copy.attributes(x, tidy2magpie(suppressMessages(reshape2::melt(x)), ...))
+
+    helper <- suppressWarnings(data.table::setDF(data.table::melt(data.table::as.data.table(x))))
+    # The warning that is suppressed above is:
+    #  In melt.data.table(data.table::as.data.table(x)) :
+    #   id.vars and measure.vars are internally guessed when both are 'NULL'. All non-numeric/integer/logical type
+    #   columns are considered id.vars, which in this case are columns {...}. Consider providing at least one of
+    #   'id' or 'measure' vars in future.
+
+    out <- copy.attributes(x, tidy2magpie(suppressMessages((helper)), ...))
     return(out)
   }
 )
@@ -237,7 +265,6 @@ setMethod("as.magpie",
   signature(x = "quitte"),
   function(x, sep = ".", replacement = "_", filter = TRUE, ...) {
     isQuitte <- function(x) {
-
       # object is formally defined as quitte but it has to
       # be checked whether it follows all structural
       # rules of a quitte object
@@ -267,7 +294,7 @@ setMethod("as.magpie",
       x <- x[names(x) != i]
     }
     # remove NA columns and <NA> columns that have been replaced by forcats::fct_explicit_na()
-    naString <- formals(fct_explicit_na)[["na_level"]]
+    naString <- "(Missing)"
     x <- x[colSums(!(naString == x | is.na(x))) != 0]
 
     # put value column as last column
@@ -294,16 +321,25 @@ setMethod("as.magpie",
 
 
 .raster2magpie <- function(x, unit = "unknown", temporal = NULL) {
-  if (!requireNamespace("raster", quietly = TRUE)) stop("The package \"raster\" is required for raster conversions!")
-  # na.rm = TRUE seems to remove all cells in which at least one layer has an NA. Hence, use na.rm = FALSE
-  # and remove all cells which have NAs in ALL layers afterwards!
-  df <- as.data.frame(x, na.rm = FALSE)
-  df <- df[rowSums(!is.na(df)) != 0, , drop = FALSE]
+  if (inherits(x, "SpatRaster")) {
+    if (!requireNamespace("terra", quietly = TRUE)) stop("The package \"terra\" is required for raster conversions!")
+    df <- as.data.frame(x, na.rm = TRUE, xy = TRUE)
+    df$x <- sub(".", "p", df$x, fixed = TRUE)
+    df$y <- sub(".", "p", df$y, fixed = TRUE)
+  } else {
+    if (!requireNamespace("raster", quietly = TRUE)) stop("The package \"raster\" is required for raster conversions!")
+    # na.rm = TRUE seems to remove all cells in which at least one layer has an NA. Hence, use na.rm = FALSE
+    # and remove all cells which have NAs in ALL layers afterwards!
+    df <- as.data.frame(x, na.rm = FALSE)
+    df <- df[rowSums(!is.na(df)) != 0, , drop = FALSE]
 
-  co <- raster::coordinates(x)[as.integer(rownames(df)), ]
-  co <- matrix(sub(".", "p", co, fixed = TRUE), ncol = 2)
-  colnames(co) <- c("x", "y")
-  df <- as.data.table(cbind(co, df))
+    co <- raster::coordinates(x)[as.integer(rownames(df)), ]
+    co <- matrix(sub(".", "p", co, fixed = TRUE), ncol = 2)
+    colnames(co) <- c("x", "y")
+    df <- cbind(co, df)
+  }
+
+  df <- as.data.table(df)
   df <- melt(df, id.vars = c("x", "y"))
   variable <- as.data.table(tstrsplit(df$variable, "..", fixed = TRUE))
   if (!is.null(temporal)) temporal <- temporal + 2
@@ -345,4 +381,11 @@ setMethod("as.magpie",
   function(x, unit = "unknown", temporal = NULL, ...) {
     return(.raster2magpie(x, unit = unit, temporal = temporal))
   }
+)
+
+setMethod("as.magpie",
+          signature(x = "SpatRaster"),
+          function(x, unit = "unknown", temporal = NULL, ...) {
+            return(.raster2magpie(x, unit = unit, temporal = temporal))
+          }
 )

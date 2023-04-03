@@ -1,10 +1,6 @@
 ## ---- echo = FALSE------------------------------------------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
-## ---- echo = TRUE, message = FALSE--------------------------------------------
-# load magclass package
-library(magclass)
-
 ## ---- echo = TRUE-------------------------------------------------------------
 a <- matrix(1:9, 3, 3, dimnames = list(c("AFR", "CPA", "EUR"),
   paste0("y", 2000:2002)))

@@ -17,23 +17,24 @@ read.magpie(
 \arguments{
 \item{file_name}{file name including file ending (wildcards are supported).
 Optionally also the full path can be specified here (instead of splitting it
-to file\_name and file\_folder)}
+to file_name and file_folder)}
 
 \item{file_folder}{folder the file is located in (alternatively you can also
-specify the full path in file\_name - wildcards are supported)}
+specify the full path in file_name - wildcards are supported)}
 
 \item{file_type}{format the data is stored in. Currently 13 formats are
 available: "rds" (recommended compressed format),
 "cs2" & "cs2b" (cellular standard MAgPIE format), "csv" (regional standard
 MAgPIE format), "cs3" (multidimensional format compatible to GAMS), "cs4"
 (alternative multidimensional format compatible to GAMS, in contrast to cs3
-it can also handle sparse data), "csvr", "cs2r", "cs3r" and "cs4r" which are
+it can also handle sparse data), "cs5" (more generalized version of cs4),
+"csvr", "cs2r", "cs3r" and "cs4r" which are
 the same formats as the previous mentioned ones with the only difference
 that they have a REMIND compatible format, "m" (binary MAgPIE format
 "magpie"), "mz" (compressed binary MAgPIE format "magpie zipped") "put"
 (format used primarily for the REMIND-MAgPIE coupling) and "asc",
-(ASCII-Grid format as used by ArcGis) . If file\_type=NULL the file ending
-of the file\_name is used as format. If format is different to the formats
+(ASCII-Grid format as used by ArcGis) . If file_type=NULL the file ending
+of the file_name is used as format. If format is different to the formats
 mentioned standard MAgPIE format is assumed.}
 
 \item{as.array}{Should the input be transformed to an array? This can be
@@ -62,7 +63,7 @@ Reads a MAgPIE-file and converts it to a 3D array of the structure
 (cells,years,datacolumn)
 }
 \details{
-This function reads from 13 different MAgPIE file\_types. "rds" is
+This function reads from 13 different MAgPIE file_types. "rds" is
 a R-default format for storing R objects."cs2" or "cs2b" is the new standard
 format for cellular data with or without
 header and the first columns (year,regiospatial) or only (regiospatial),

@@ -3,7 +3,7 @@
 #' Writes a MAgPIE-3D-array (cells,years,datacolumn) to a file in one of three
 #' MAgPIE formats (standard, "magpie", "magpie zipped")
 #'
-#' This function can write 13 different MAgPIE file\_types. "cs2" is the new
+#' This function can write 13 different MAgPIE file_types. "cs2" is the new
 #' standard format for cellular data with or without header and the first
 #' columns (year,regiospatial) or only (regiospatial), "cs2b" is identical to
 #' "cs2" except that it will suppress the data name if it has only 1 element
@@ -22,27 +22,29 @@
 #' data column. In the case that more than one year and data column is supplied
 #' several files are written with the structure filename_year_datacolumn.asc
 #'
-#' @param x MAgPIE-object
+#' @param x a magclass object. An exception is that formats written via the raster package
+#' (currently "nc", "asc", "grd" and "tif") also accept RasterBrick objects which have
+#' been previously created from a magclass object via as.RasterBrick)
 #' @param file_name file name including file ending (wildcards are supported).
 #' Optionally also the full path can be specified here (instead of splitting it
-#' to file\_name and file\_folder)
+#' to file_name and file_folder)
 #' @param file_folder folder the file should be written to (alternatively you
-#' can also specify the full path in file\_name - wildcards are supported)
+#' can also specify the full path in file_name - wildcards are supported)
 #' @param file_type Format the data should be stored as. Currently the following formats
 #' are available: "rds" (default R-data format), "cs2" (cellular standard
 #' MAgPIE format), "cs2b" (cellular standard MAgPIE format with suppressed header ndata=1),
 #' "csv" (regional standard MAgPIE format), "cs3" (Format for multidimensional MAgPIE
 #' data, compatible to GAMS), "cs4" (alternative multidimensional format compatible
-#' to GAMS, in contrast to cs3 it can also handle sparse data), "csvr", "cs2r",
-#' "cs3r" and "cs4r" which are the same formats as the previous mentioned ones
+#' to GAMS, in contrast to cs3 it can also handle sparse data), "cs5" (more generalized version of cs4),
+#' "csvr", "cs2r", "cs3r" and "cs4r" which are the same formats as the previous mentioned ones
 #' with the only difference that they have a REMIND compatible format, "m"
 #' (binary MAgPIE format "magpie"), "mz" (compressed binary MAgPIE format
 #' "magpie zipped"), "asc" (ASCII grid format), "nc" (netCDF format), "tif"
-#' (GEOtiff format) and "grd" (native raster format). If file\_type=NULL
-#' the file ending of the file\_name is used as format. If
+#' (GEOtiff format) and "grd" (native raster format). If file_type=NULL
+#' the file ending of the file_name is used as format. If
 #' format is different to the formats mentioned standard MAgPIE format is
-#' assumed. Please be aware that the file\_name is independent of the
-#' file\_type you choose here, so no additional file ending will be added!
+#' assumed. Please be aware that the file_name is independent of the
+#' file_type you choose here, so no additional file ending will be added!
 #' @param append Decides whether an existing file should be overwritten (FALSE)
 #' or the data should be added to it (TRUE). Append = TRUE only works if the
 #' existing data can be combined with the new data using the mbind function
@@ -57,6 +59,7 @@
 #' full access for user, read access for group and no acess for anybody else).
 #' Set to NULL system defaults will be used. Access codes are identical to the
 #' codes used in unix function chmod.
+#' @param zname Time variable for the writeRaster function
 #' @param ... additional arguments passed to specific write functions
 #' @note
 #'
@@ -90,7 +93,7 @@
 #' @importFrom utils write.csv write.table
 #' @export
 write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, append = FALSE, comment = NULL, # nolint
-                         comment.char = "*", mode = NULL, ...) {       # nolint
+                         comment.char = "*", mode = NULL, zname = "Time",...) {       # nolint
   umask <- Sys.umask()
   if (!is.null(mode)) {
     umaskMode <- as.character(777 - as.integer(mode))
@@ -99,23 +102,26 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
     mode <- as.character(777 - as.integer(as.character(umask)))
   }
   if (is.null(x)) x <- as.magpie(numeric(0))
-  if (is.magpie(x)) {
+  if (is.magpie(x) || inherits(x, "RasterBrick")) {
     years <- !(is.null(dimnames(x)[[2]]))
 
     # if file-type is not mentioned file-ending is used as file-type
     if (is.null(file_type)) {
       file_type <- tail(strsplit(file_name, "\\.")[[1]], 1) # nolint
     }
+    if (inherits(x, "RasterBrick") && !(file_type %in% c("nc", "asc", "grd", "tif"))) {
+      stop("RasterBrick format is only allowed for file types: nc, asc, grd and tif")
+    }
     if (!file_folder == "") {
       filePath <- paste(file_folder, file_name, sep = "/")
-    }
-    else {
+    } else {
       filePath <- file_name # nolint
     }
 
-    # look for comment/addtitional information
-    if (is.null(comment) & !is.null(attr(x, "comment"))) comment <- attr(x, "comment")
+    # look for comment/additional information
+    if (is.null(comment) && !is.null(attr(x, "comment"))) comment <- attr(x, "comment")
     if (is.null(comment)) comment <- ""
+    comment <- unlist(strsplit(comment, "\n"))
 
     # expand wildcards
     filePath <- file.path(Sys.glob(dirname(filePath)), basename(filePath))
@@ -124,7 +130,7 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
       warning("file name is ambiguous, only first alternative is used!")
     }
 
-    if (append & file.exists(filePath)) {
+    if (append && file.exists(filePath)) {
       x2 <- read.magpie(filePath)
       x <- mbind(x2, x)
     }
@@ -172,19 +178,30 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
         stop("The package \"raster\" is required!")
       }
       format <- c(asc = "ascii", grd = "raster", tif = "GTiff")
-      if (ndata(x) != 1) stop("Currently no support for multiple variables for file type \"", file_type,
-                              "\". Please store each variable separately.")
-      rx <- as.RasterBrick(x)
-      if (file_type == "asc") {
-        if (dim(rx)[3] != 1) stop("asc does not support multiple year layers. Please choose just one!")
-        rx <- rx[[1]]
+      if (is.magpie(x)) {
+        if (ndata(x) != 1) stop("Currently no support for multiple variables for file type \"", file_type,
+                                "\". Please store each variable separately.")
+        varname <- getItems(x, dim = 3)
+        zunit <- ifelse(all(isYear(getYears(x))), "years", "")
+        x <- as.RasterBrick(x)
+      } else if (inherits(x, "RasterBrick")) {
+        tmp <- names(x)
+        tmp <- strsplit(tmp, "\\..")
+        years <- sort(unique(unlist(lapply(tmp, function(x) x[1]))))
+        varname <- sort(unique(unlist(lapply(tmp, function(x) x[2]))))
+        zunit <- ifelse(all(isYear(years)), "years", "")
+        if (length(varname) != 1) stop("Currently no support for multiple variables for file type \"", file_type,
+                                "\". Please store each variable separately.")
       }
-      varname <- getItems(x, dim = 3)
-      zunit <- ifelse(all(isYear(getYears(x))), "years", "")
+      if (file_type == "asc") {
+        if (dim(x)[3] != 1) stop("asc does not support multiple year layers. Please choose just one!")
+        x <- x[[1]]
+      }
       if (is.null(varname)) varname <- "Variable"
-      raster::writeRaster(rx, filename = filePath, format = format[file_type], overwrite = TRUE,
-                          zname = "Time", zunit = zunit, varname = varname, ...)
+      raster::writeRaster(x, filename = filePath, format = format[file_type], overwrite = TRUE,
+                          zname = zname, zunit = zunit, varname = varname, ...)
     } else if (file_type == "nc") {
+
       if (!requireNamespace("ncdf4", quietly = TRUE) || !requireNamespace("raster", quietly = TRUE)) {
         stop("The packages \"ncdf4\" and \"raster\" are required!")
       }
@@ -193,9 +210,19 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
         if (length(unique(layer)) == 1) return(rx)
         return(rx[[which(layer == name)]])
       }
-      rx <- as.RasterBrick(x)
-      varnames <- getItems(x, dim = 3)
-      zunit <- ifelse(all(isYear(getYears(x))), "years", "")
+      if (is.magpie(x)) {
+        varnames <- getItems(x, dim = 3)
+        zunit <- ifelse(all(isYear(getYears(x))), "years", "")
+        years <- getYears(x, as.integer = TRUE)
+        x <- as.RasterBrick(x)
+      } else if (inherits(x, "RasterBrick")) {
+        tmp <- names(x)
+        tmp <- strsplit(tmp, "\\..")
+        years <- sort(unique(unlist(lapply(tmp, function(x) x[1]))))
+        varnames <- sort(unique(unlist(lapply(tmp, function(x) x[2]))))
+        zunit <- ifelse(all(isYear(years)), "years", "")
+        years <- as.numeric(gsub("y", "", years))
+      }
       if (is.null(varnames)) varnames <- "Variable"
       if (is.null(comment)) {
        unit <- "not specified"
@@ -208,22 +235,27 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
           unit <- units[which(indicators == "unit")]
         }
       }
-      raster::writeRaster(.sub(rx, varnames[1]), filename = filePath, format = "CDF", overwrite = TRUE,
-                          compression = 9, zname = "Time", zunit = zunit, varname = varnames[1], varunit = unit, ...)
+      # raster is using partial matching resulting in a warning if warnPartialMatchDollar is set
+      suppressSpecificWarnings({
+        raster::writeRaster(.sub(x, varnames[1]), filename = filePath, format = "CDF", overwrite = TRUE,
+                            compression = 9, zname = zname, zunit = zunit, varname = varnames[1], varunit = unit, ...)
+      }, "partial match of 'group' to 'groups'", fixed = TRUE)
       nc <- ncdf4::nc_open(filePath, write = TRUE)
       if (zunit == "years") {
-        ncdf4::ncvar_put(nc, "Time", getYears(x, as.integer = TRUE))
+        try(ncdf4::ncvar_put(nc, zname, years), silent = TRUE)
       }
       if (length(varnames) > 1) {
         for (i in varnames[-1]) {
-          nc <- ncdf4::ncvar_add(nc, ncdf4::ncvar_def(i, unit, nc$dim, compression = 9))
-          ncdf4::ncvar_put(nc, i, aperm(as.array(.sub(rx, i)), c(2, 1, 3)))
+          suppressSpecificWarnings({
+            nc <- ncdf4::ncvar_add(nc, ncdf4::ncvar_def(i, unit, nc$dim, compression = 9))
+          }, "partial match of 'group' to 'groups'", fixed = TRUE)
+          ncdf4::ncvar_put(nc, i, aperm(as.array(.sub(x, i)), c(2, 1, 3)))
         }
       }
       ncdf4::nc_close(nc)
     } else if (file_type == "rds") {
       saveRDS(object = x, file = filePath, ...)
-    } else if (file_type == "cs3" | file_type == "cs3r") {
+    } else if (file_type == "cs3" || file_type == "cs3r") {
       if (file_type == "cs3r") dimnames(x)[[2]] <- sub("y", "", dimnames(x)[[2]])
       if (dim(x)[3] != prod(sapply(getItems(x, dim = 3, split = TRUE), length))) { # nolint
         stop("Input data seems to be sparse but ", file_type, " does not support sparse data. Please use ",
@@ -257,7 +289,7 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
       write.csv(x, file = zz, quote = FALSE, row.names = FALSE)
       close(zz)
       Sys.chmod(filePath, mode)
-    } else if (file_type == "cs4" | file_type == "cs4r") {
+    } else if (file_type == "cs4" || file_type == "cs4r") {
       printCells <- nregions(x) < ncells(x)
       printRegions <- (!is.null(getItems(x, dim = 1.1)) && getItems(x, dim = 1.1)[1] != "GLO")
       printData <- ((ndata(x) > 1) | !is.null(getNames(x)))
@@ -278,6 +310,22 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
       write.table(output, file = zz, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = ",")
       close(zz)
       Sys.chmod(filePath, mode)
+    } else if (file_type == "cs5") {
+      output <- as.data.frame(x, rev = 3, raw = TRUE)
+
+      .formatMeta <- function(meta, commentChar) {
+        out <- NULL
+        for (n in names(meta)) {
+          out <- c(out, paste0(commentChar, "META ", n, ": ", paste(meta[[n]], collapse = ", ")))
+        }
+        return(out)
+      }
+
+      zz <- file(filePath, open = "w")
+      if (any(comment != "")) writeLines(paste(comment.char, comment, sep = ""), zz)
+      writeLines(.formatMeta(attributes(output)[c("names", "dimtype")], comment.char), zz)
+      write.table(output, file = zz, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = ",")
+      close(zz)
 
     } else {
       printCells <- nregions(x) < ncells(x)
@@ -287,8 +335,8 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
       if (file_type == "cs2b" && ndata(x) == 1) getNames(x) <- NULL
 
       # non-cellular data
-      if (!printCells & (!printData | !years | !printRegions)) {
-        if (file_type == "csvr" | file_type == "cs2r") dimnames(x)[[2]] <- sub("y", "", dimnames(x)[[2]])
+      if (!printCells && (!printData || !years || !printRegions)) {
+        if (file_type == "csvr" || file_type == "cs2r") dimnames(x)[[2]] <- sub("y", "", dimnames(x)[[2]])
         if (!printData) {
           output <-  array(x, dim = dim(x)[1:2], dimnames = list(dimnames(x)[[1]], dimnames(x)[[2]]))
           output <- aperm(output)
@@ -308,7 +356,7 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
           output <-  array(x, dim = dim(x)[c(1, 3)], dimnames = list(dimnames(x)[[1]], dimnames(x)[[3]]))
           header <- !is.null(dimnames(output)[[2]])
           if (printRegions) output <- cbind(substring(dimnames(x)[[1]], 1, 3), output)
-          if (header & !printRegions) {
+          if (header && !printRegions) {
             output <- t(output)
             header <- FALSE
             output <- cbind(dimnames(x)[[3]], output)
@@ -319,14 +367,14 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
           output <- cbind(dimnames(x)[[2]], output)
           dimnames(output)[[2]][1] <- "dummy"
         }
-        if (header & printRegions) dimnames(output)[[2]][1] <- "dummy"
+        if (header && printRegions) dimnames(output)[[2]][1] <- "dummy"
         zz <- file(filePath, open = "w")
         if (any(comment != "")) writeLines(paste(comment.char, comment, sep = ""), zz)
         write.table(output, zz, sep = ",", col.names = header, row.names = FALSE, quote = FALSE)
         close(zz)
         Sys.chmod(filePath, mode)
       } else {
-        if (file_type == "csvr" | file_type == "cs2r") dimnames(x)[[2]] <- sub("y", "", dimnames(x)[[2]])
+        if (file_type == "csvr" || file_type == "cs2r") dimnames(x)[[2]] <- sub("y", "", dimnames(x)[[2]])
         if (file_type %in% c("cs2", "cs2b", "cs2r")) printRegions <- FALSE
         output <- array(NA, c(dim(x)[1] * dim(x)[2], dim(x)[3] + printRegions + printCells + years))
         output[, (1 + printRegions + printCells + years):dim(output)[2]] <- as.vector(as.matrix(x))
@@ -340,7 +388,7 @@ write.magpie <- function(x, file_name, file_folder = "", file_type = NULL, appen
           if (file_type %in% c("cs2", "cs2b", "cs2r")) {
             output[, 1 + printRegions + years] <- rep(gsub(".", "_", dimnames(x)[[1]], fixed = TRUE), dim(x)[2])
           } else {
-            output[, 1 + printRegions + years] <- rep(1:dim(x)[1], dim(x)[2])
+            output[, 1 + printRegions + years] <- rep(seq_len(dim(x)[1]), dim(x)[2])
           }
         }
         if (!is.null(dimnames(x)[[3]])) {

@@ -73,7 +73,8 @@ read.report <- function(file, as.list = TRUE) { # nolint
   .returnMagpie <- function(tmp, scenario, model) {
 
     # replace weird degree symbol in tables
-    tmp$Unit      <- sub(pattern = "\U{00B0}C", replacement = "K", x = tmp$Unit, useBytes = TRUE) # nolint
+    tmp$Unit <- enc2utf8(tmp$Unit) # nolint
+    tmp$Unit <- sub(pattern = "\U{00B0}C", replacement = "K", x = tmp$Unit, useBytes = TRUE) # nolint
     regions <- unique(as.character(tmp$Region))
     names(regions) <- regions
     years <- sub("X", "y", grep("^X[0-9]{4}$", dimnames(tmp)[[2]], value = TRUE))
@@ -87,7 +88,9 @@ read.report <- function(file, as.list = TRUE) { # nolint
       warning("Replaced some \".\" with \"p\" to prevent misinterpretation as dim separator")
     }
     # replace weird ° in tables after sub function evaluation
-    names        <- sub(pattern = "\U{00B0}C", replacement = "K", x = names, useBytes = TRUE)
+    names <- enc2utf8(names)
+    names <- sub(pattern = "\U{00B0}C", replacement = "K", x = names, useBytes = TRUE)
+    names(names) <- enc2utf8(names(names))
     names(names) <- sub(pattern = "\U{00B0}C", replacement = "K", x = names(names), useBytes = TRUE)
     mag <- new.magpie(sub("ZZZZZZGLO", "GLO", (sort(sub("GLO", "ZZZZZZGLO", regions)))), years, names)
     yearelems <- grep("^X[0-9]{4}$", dimnames(tmp)[[2]])
@@ -183,12 +186,12 @@ read.report <- function(file, as.list = TRUE) { # nolint
 
   if (!as.list) {
     regions <- Reduce(union, lapply(unlist(output, recursive = FALSE), function(x) {
-      getRegions(x)
+      getItems(x, dim = 1.1)
     })) # make sure that magpie objects to be merged share the same regions
 
     .tmpFunc <- function(x) {
       data <- new.magpie(regions, getYears(x), getNames(x), fill = NA)
-      data[getRegions(x), getYears(x), getNames(x)] <- x[getRegions(x), getYears(x), getNames(x)]
+      data[getItems(x, dim = 1.1), getYears(x), getNames(x)] <- x[getItems(x, dim = 1.1), getYears(x), getNames(x)]
       return(data)
     }
 

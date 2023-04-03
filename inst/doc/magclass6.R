@@ -2,7 +2,7 @@
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ## ---- echo = TRUE-------------------------------------------------------------
-library(magclass) # nolint
+library(magclass)
 a <- maxample("animal")
 p <- maxample("pop")
 

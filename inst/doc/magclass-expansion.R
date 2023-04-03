@@ -6,10 +6,8 @@ options(magclass_setMatching = FALSE)
 
 ## ---- echo = TRUE-------------------------------------------------------------
 library(magclass)
-
-#
 a <- b <- maxample("pop")
-getRegions(b)[1] <- "AAA"
+getItems(b, dim = 1)[1] <- "AAA"
 
 ## ---- echo = TRUE-------------------------------------------------------------
 
@@ -36,8 +34,8 @@ options(magclass_expand_version = 2.1) # default setting for magclass >= 5.0
 
 a <- b <- maxample("pop")
 
-getRegions(a)[1] <- "AAA"
-getRegions(b)[1] <- "BBB"
+getItems(a, dim = 1)[1] <- "AAA"
+getItems(b, dim = 1)[1] <- "BBB"
 
 options(magclass_setMatching = FALSE)
 head(a * b)

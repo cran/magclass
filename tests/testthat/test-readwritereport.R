@@ -1,5 +1,5 @@
 p <- maxample("pop")
-attr(p, "Metadata") <- NULL
+attr(p, "Metadata") <- NULL # nolint
 
 test_that("read/write report works", {
   ref <- structure(list(Model = "N/A", Scenario = "N/A", Region = "World", Variable = "1",
@@ -98,9 +98,17 @@ test_that("multidim handling works", {
                    row.names = c(1L, 3L, 2L, 4L), class = "data.frame")
   expect_identical(write.report(p[1:2, 1:2, ], extracols = "Xtra"), ref)
   ref2 <- ref[-4]
-  ref2$Variable <- "blub" #nolint
+  ref2$Variable <- "blub" # nolint
   expect_identical(write.report(p[1:2, 1:2, ]), ref2)
+})
 
-
-
+test_that("read/write report works with braces", {
+  f <- tempfile()
+  foo <- new.magpie("DEU", c(2015, 2020),
+                    "Emissions|CO2|Energy|Demand|Transportation (w/ bunkers) (Mt CO2/yr)",
+                    fill = 0)
+  foo["DEU", 2020, "Emissions|CO2|Energy|Demand|Transportation (w/ bunkers) (Mt CO2/yr)"] <- 10
+  expect_silent(write.report(foo, f))
+  df <- read.csv(f, sep = ";", stringsAsFactors = FALSE)
+  expect_identical(df$Unit, "Mt CO2/yr")
 })

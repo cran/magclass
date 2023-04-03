@@ -17,6 +17,8 @@
 \alias{as.magpie,logical-method}
 \alias{as.magpie,RasterLayer-method}
 \alias{as.magpie,RasterStack-method}
+\alias{as.magpie,SpatRaster-method}
+\alias{as.magpie,LPJmLData-method}
 \alias{is.magpie}
 \alias{[,magpie-method}
 \alias{[,magpie,ANY,ANY-method}
