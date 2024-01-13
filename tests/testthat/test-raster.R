@@ -1,6 +1,6 @@
 skip_if_not_installed("terra")
 
-test_that("terra convertion does not alter data", {
+test_that("terra conversion does not alter data", {
   expect_error(as.SpatRaster(1), "not a magpie object")
   for (i in c(0.5, 2)) {
     for (j in c(1, 4)) {
@@ -18,7 +18,20 @@ test_that("terra convertion does not alter data", {
         expect_equal(ndata(m), j)
         expect_equal(nyears(m), t)
         r2 <- as.SpatRaster(m)
-        expect_equal(r[[names(r)]], terra::extend(r2[[names(r)]], terra::ext(r)))
+
+        srd <- as.SpatRasterDataset(m)
+        expect_identical(names(srd), getItems(m, 3))
+
+        noTime <- function(a) {
+          terra::time(a) <- NULL
+          return(a)
+        }
+
+        # comparing times does not work here, so compare separately
+        expect_equal(noTime(r), noTime(terra::extend(r2[[names(r)]], terra::ext(r))))
+        if (t > 1) {
+          expect_equal(terra::time(r2), rep_len(1900 + 1:t, terra::nlyr(r)))
+        }
         m2 <- as.magpie(r2)
         expect_identical(m, m2)
         v <- terra::as.polygons(r)
@@ -35,7 +48,7 @@ test_that("terra convertion does not alter data", {
 
 skip_if_not_installed("raster")
 
-test_that("raster convertion does not alter data", {
+test_that("raster conversion does not alter data", {
   expect_error(as.RasterBrick(1), "not a magpie object")
   for (i in c(0.5, 2)) {
     for (j in c(1, 4)) {
